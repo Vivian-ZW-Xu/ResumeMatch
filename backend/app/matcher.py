@@ -128,6 +128,7 @@ def match_single(resume: ResumeInput, jd: str) -> ResumeAnalysis:
         strengths=[MatchEvidence(**s) for s in raw.get("strengths", [])],
         gaps=[MatchEvidence(**g) for g in raw.get("gaps", [])],
         summary=raw.get("summary", ""),
+        resume_content=resume.content,
     )
 
 def compare_multiple(
@@ -278,3 +279,91 @@ if __name__ == "__main__":
         print(f"\nGaps ({len(r.gaps)}):")
         for g in r.gaps:
             print(f"  - {g.point}")
+
+
+# ============================================================
+# Improvement suggestion
+# ============================================================
+
+SUGGEST_SYSTEM_PROMPT = """You are an expert resume coach. \
+Your job is to help job seekers improve specific weaknesses in their resume \
+to better match a target job.
+
+CRITICAL RULES:
+1. NEVER invent qualifications, skills, or experiences the candidate does not have.
+2. Only suggest rewording, reframing, or highlighting what is ALREADY in the resume.
+3. If the candidate genuinely lacks a required skill or experience, say so honestly \
+and suggest how they could address it (e.g., learn it, mention transferable skills).
+4. Be concrete and actionable. Vague advice is useless.
+5. Keep suggestions concise (2-4 sentences max)."""
+
+
+SUGGEST_PROMPT_TEMPLATE = """A job seeker's resume has the following gap relative to a target job. \
+Help them improve this aspect of their resume.
+
+=== JOB DESCRIPTION ===
+{jd}
+
+=== RESUME ===
+{resume}
+
+=== GAP TO ADDRESS ===
+Issue: {gap_point}
+{jd_requirement}
+{resume_context}
+
+=== TASK ===
+Provide a concrete suggestion to improve the resume for this gap.
+
+If the candidate has related experience that could be reframed to better address this gap, \
+provide a rewritten resume bullet.
+
+If the candidate genuinely lacks this qualification, acknowledge it honestly and \
+suggest realistic alternatives (e.g., highlighting transferable skills, learning resources, \
+or reframing related experience).
+
+Return a JSON object:
+
+{{
+  "suggestion": "<2-4 sentences of concrete, actionable advice>",
+  "rewritten_bullet": "<a rewritten resume bullet that addresses this gap, OR null if not applicable>"
+}}
+
+Return ONLY the JSON object."""
+
+
+def suggest_improvement(
+    resume_content: str,
+    jd: str,
+    gap_point: str,
+    gap_jd_excerpt: Optional[str] = None,
+    gap_resume_excerpt: Optional[str] = None,
+) -> dict:
+    """
+    Generate an improvement suggestion for a specific gap.
+
+    Returns a dict with 'suggestion' and optionally 'rewritten_bullet'.
+    """
+    # Build optional context lines
+    jd_req_line = f'JD requires: "{gap_jd_excerpt}"' if gap_jd_excerpt else ""
+    resume_ctx_line = f'Resume currently says: "{gap_resume_excerpt}"' if gap_resume_excerpt else ""
+
+    prompt = SUGGEST_PROMPT_TEMPLATE.format(
+        jd=jd.strip(),
+        resume=resume_content.strip(),
+        gap_point=gap_point,
+        jd_requirement=jd_req_line,
+        resume_context=resume_ctx_line,
+    )
+
+    client = get_llm_client()
+    raw = client.chat_json(
+        prompt=prompt,
+        system=SUGGEST_SYSTEM_PROMPT,
+        temperature=0.2,
+    )
+
+    return {
+        "suggestion": raw.get("suggestion", ""),
+        "rewritten_bullet": raw.get("rewritten_bullet"),
+    }

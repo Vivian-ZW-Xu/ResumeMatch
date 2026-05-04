@@ -49,6 +49,7 @@ class ResumeAnalysis(BaseModel):
     strengths: List[MatchEvidence] = Field(default_factory=list)
     gaps: List[MatchEvidence] = Field(default_factory=list)
     summary: str = Field(..., description="Overall 2-3 sentence summary")
+    resume_content: str = Field(default="", description="Original resume text (for follow-up suggestions)")
 
 
 class AnalyzeResponse(BaseModel):
@@ -56,3 +57,22 @@ class AnalyzeResponse(BaseModel):
     results: List[ResumeAnalysis]
     best_match_id: Optional[str] = Field(None, description="ID of best-matching resume (only when multiple resumes)")
     comparison_insight: Optional[str] = Field(None, description="LLM-generated comparison summary (only when multiple)")
+
+
+# ============================================================
+# Suggest endpoint schemas
+# ============================================================
+
+class SuggestRequest(BaseModel):
+    """Request body for /suggest endpoint."""
+    resume_content: str = Field(..., description="Full resume text")
+    jd: str = Field(..., description="Job description text")
+    gap_point: str = Field(..., description="The specific gap to address")
+    gap_jd_excerpt: Optional[str] = Field(None, description="JD requirement that's missing")
+    gap_resume_excerpt: Optional[str] = Field(None, description="Resume excerpt related to gap")
+
+
+class SuggestResponse(BaseModel):
+    """Response for /suggest endpoint."""
+    suggestion: str = Field(..., description="Concrete actionable advice")
+    rewritten_bullet: Optional[str] = Field(None, description="Suggested rewritten resume bullet, if applicable")

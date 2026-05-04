@@ -6,9 +6,15 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 
-from .matcher import analyze
+from .matcher import analyze, suggest_improvement
 from .pdf_parser import parse_pdf
-from .schemas import AnalyzeRequest, AnalyzeResponse, ResumeInput
+from .schemas import (
+    AnalyzeRequest,
+    AnalyzeResponse,
+    ResumeInput,
+    SuggestRequest,
+    SuggestResponse,
+)
 
 
 app = FastAPI(
@@ -104,3 +110,21 @@ async def analyze_upload(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
+    
+
+@app.post("/suggest", response_model=SuggestResponse)
+async def suggest_endpoint(request: SuggestRequest):
+    """
+    Generate an improvement suggestion for a specific gap.
+    """
+    try:
+        result = suggest_improvement(
+            resume_content=request.resume_content,
+            jd=request.jd,
+            gap_point=request.gap_point,
+            gap_jd_excerpt=request.gap_jd_excerpt,
+            gap_resume_excerpt=request.gap_resume_excerpt,
+        )
+        return SuggestResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Suggestion failed: {e}")

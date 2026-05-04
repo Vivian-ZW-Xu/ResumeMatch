@@ -1,8 +1,7 @@
 /**
  * ResultCard: displays the full analysis result for a single resume.
  * Includes radar chart, dimension breakdown, strengths, and gaps.
- * Supports collapsible mode for multi-resume comparison.
- * Strengths and Gaps sections are also independently collapsible.
+ * Each gap has a "Get suggestion" button to fetch improvement advice.
  */
 "use client";
 
@@ -15,13 +14,25 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from "recharts";
-import { CheckCircle2, AlertCircle, Trophy, ChevronDown } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertCircle,
+  Trophy,
+  ChevronDown,
+  Lightbulb,
+  Loader2,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { ResumeAnalysis } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import {
+  suggestImprovement,
+  type ResumeAnalysis,
+  type MatchEvidence,
+} from "@/lib/api";
 
 // ============================================================
-// Helper component: collapsible section (for Strengths/Gaps)
+// Helper component: collapsible section
 // ============================================================
 
 interface CollapsibleSectionProps {
@@ -59,11 +70,115 @@ function CollapsibleSection({
 }
 
 // ============================================================
+// Helper component: gap item with "Get suggestion" button
+// ============================================================
+
+interface GapItemProps {
+  gap: MatchEvidence;
+  resumeContent: string;
+  jd: string;
+}
+
+function GapItem({ gap, resumeContent, jd }: GapItemProps) {
+  const [suggestion, setSuggestion] = useState<{
+    suggestion: string;
+    rewritten_bullet?: string | null;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSuggestion = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await suggestImprovement({
+        resume_content: resumeContent,
+        jd,
+        gap_point: gap.point,
+        gap_jd_excerpt: gap.jd_excerpt,
+        gap_resume_excerpt: gap.resume_excerpt,
+      });
+      setSuggestion(result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to get suggestion";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="border-l-2 border-amber-300 pl-4 space-y-1">
+      <p className="text-sm font-medium">{gap.point}</p>
+      {gap.jd_excerpt && (
+        <p className="text-xs text-muted-foreground italic">
+          📋 JD requires: &quot;{gap.jd_excerpt}&quot;
+        </p>
+      )}
+      {gap.resume_excerpt && (
+        <p className="text-xs text-muted-foreground italic">
+          📄 Resume says: &quot;{gap.resume_excerpt}&quot;
+        </p>
+      )}
+
+      {/* Get suggestion button / suggestion display */}
+      {!suggestion && !loading && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchSuggestion}
+          className="mt-2 h-7 text-xs"
+        >
+          <Lightbulb className="h-3 w-3 mr-1" />
+          Get suggestion
+        </Button>
+      )}
+
+      {loading && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Generating suggestion...
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-2 text-xs text-red-600">
+          Error: {error}
+        </div>
+      )}
+
+      {suggestion && (
+        <div className="mt-3 bg-amber-50 border border-amber-200 rounded p-3 space-y-2">
+          <p className="text-xs font-semibold text-amber-900 flex items-center gap-1">
+            <Lightbulb className="h-3 w-3" />
+            Suggestion
+          </p>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            {suggestion.suggestion}
+          </p>
+          {suggestion.rewritten_bullet && (
+            <div className="mt-2 pt-2 border-t border-amber-200">
+              <p className="text-xs font-semibold text-amber-900 mb-1">
+                Suggested rewrite:
+              </p>
+              <p className="text-sm text-slate-800 italic bg-white px-3 py-2 rounded border border-amber-200">
+                {suggestion.rewritten_bullet}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
 // Main component: ResultCard
 // ============================================================
 
 interface ResultCardProps {
   analysis: ResumeAnalysis;
+  jd: string;
   filename?: string;
   isBestMatch?: boolean;
   collapsible?: boolean;
@@ -72,6 +187,7 @@ interface ResultCardProps {
 
 export function ResultCard({
   analysis,
+  jd,
   filename,
   isBestMatch,
   collapsible = false,
@@ -155,10 +271,7 @@ export function ResultCard({
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData}>
                   <PolarGrid />
-                  <PolarAngleAxis
-                    dataKey="dimension"
-                    tick={{ fontSize: 12 }}
-                  />
+                  <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 12 }} />
                   <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} />
                   <Radar
                     name="Score"
@@ -219,31 +332,21 @@ export function ResultCard({
             </CollapsibleSection>
           )}
 
-          {/* Gaps (collapsible) */}
+          {/* Gaps (collapsible, with suggestion buttons) */}
           {analysis.gaps.length > 0 && (
             <CollapsibleSection
               title={`Gaps (${analysis.gaps.length})`}
               icon={<AlertCircle className="h-4 w-4" />}
               colorClass="text-amber-700"
             >
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {analysis.gaps.map((g, i) => (
-                  <div
+                  <GapItem
                     key={i}
-                    className="border-l-2 border-amber-300 pl-4 space-y-1"
-                  >
-                    <p className="text-sm font-medium">{g.point}</p>
-                    {g.jd_excerpt && (
-                      <p className="text-xs text-muted-foreground italic">
-                        📋 JD requires: &quot;{g.jd_excerpt}&quot;
-                      </p>
-                    )}
-                    {g.resume_excerpt && (
-                      <p className="text-xs text-muted-foreground italic">
-                        📄 Resume says: &quot;{g.resume_excerpt}&quot;
-                      </p>
-                    )}
-                  </div>
+                    gap={g}
+                    resumeContent={analysis.resume_content}
+                    jd={jd}
+                  />
                 ))}
               </div>
             </CollapsibleSection>

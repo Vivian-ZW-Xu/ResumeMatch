@@ -161,6 +161,7 @@ export default function Home() {
                   <ResultCard
                     key={analysis.resume_id}
                     analysis={analysis}
+                    jd={jd}
                     filename={file?.name}
                     isBestMatch={isBest}
                     collapsible={isMultiple}
