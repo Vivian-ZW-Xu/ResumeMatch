@@ -196,12 +196,15 @@ def analyze(resumes: List[ResumeInput], jd: str) -> AnalyzeResponse:
     """
     Main entry point: analyze one or more resumes against a JD.
 
-    Returns the full structured response.
+    Returns the full structured response with JD summary.
     """
     if not resumes:
         raise ValueError("At least one resume is required")
     if not jd or not jd.strip():
         raise ValueError("JD cannot be empty")
+
+    # Extract JD summary (do this first, fast)
+    jd_summary_raw = extract_jd_summary(jd)
 
     # Analyze each resume
     analyses = []
@@ -227,12 +230,21 @@ def analyze(resumes: List[ResumeInput], jd: str) -> AnalyzeResponse:
         analyses, jd, filenames=filenames
     )
 
+    # Build JDSummary object (None if extraction failed)
+    from .schemas import JDSummary
+    jd_summary = None
+    if jd_summary_raw:
+        try:
+            jd_summary = JDSummary(**jd_summary_raw)
+        except Exception as e:
+            print(f"Failed to parse JD summary: {e}")
+
     return AnalyzeResponse(
         results=analyses,
         best_match_id=best_match_id,
         comparison_insight=comparison_insight,
+        jd_summary=jd_summary,
     )
-
 # ============================================================
 # Quick test
 # ============================================================
@@ -367,3 +379,47 @@ def suggest_improvement(
         "suggestion": raw.get("suggestion", ""),
         "rewritten_bullet": raw.get("rewritten_bullet"),
     }
+
+
+# ============================================================
+# JD Summary extraction
+# ============================================================
+
+JD_SUMMARY_PROMPT_TEMPLATE = """Extract structured information from this job description.
+
+=== JOB DESCRIPTION ===
+{jd}
+
+=== TASK ===
+Return a JSON object with the following fields. Use null for any field NOT mentioned in the JD. \
+Do not invent information.
+
+{{
+  "company": "<company name, or null>",
+  "title": "<job title, or null>",
+  "location": "<city/state/country, or 'Remote', or null>",
+  "employment_type": "<'Full-time' | 'Part-time' | 'Internship' | 'Contract' | null>",
+  "duration": "<duration like '12 weeks' for internships, or null>",
+  "salary": "<salary range if explicitly mentioned, e.g. '$165K - $190K', or null>",
+  "education": "<education requirement summary, e.g. 'Bachelor's preferred', or null>",
+  "key_skills": ["<top 3-5 most prominent technical skills required>"],
+  "work_mode": "<'Onsite' | 'Hybrid' | 'Remote' | null>"
+}}
+
+Return ONLY the JSON object."""
+
+
+def extract_jd_summary(jd: str) -> dict:
+    """
+    Extract structured summary from a JD using LLM.
+    Returns a dict matching JDSummary schema.
+    """
+    client = get_llm_client()
+    prompt = JD_SUMMARY_PROMPT_TEMPLATE.format(jd=jd.strip())
+
+    try:
+        raw = client.chat_json(prompt=prompt, temperature=0.1)
+        return raw
+    except Exception as e:
+        print(f"JD summary extraction failed: {e}")
+        return {}

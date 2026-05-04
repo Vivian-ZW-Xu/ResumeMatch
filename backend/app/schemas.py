@@ -51,12 +51,28 @@ class ResumeAnalysis(BaseModel):
     summary: str = Field(..., description="Overall 2-3 sentence summary")
     resume_content: str = Field(default="", description="Original resume text (for follow-up suggestions)")
 
+# ============================================================
+# JD Summary schemas
+# ============================================================
 
+class JDSummary(BaseModel):
+    """Structured summary extracted from a job description."""
+    company: Optional[str] = Field(None, description="Company name")
+    title: Optional[str] = Field(None, description="Job title")
+    location: Optional[str] = Field(None, description="Location (city, remote, hybrid, etc.)")
+    employment_type: Optional[str] = Field(None, description="Full-time / Part-time / Internship / Contract")
+    duration: Optional[str] = Field(None, description="Duration if applicable (e.g. '12 weeks' for internship)")
+    salary: Optional[str] = Field(None, description="Salary range if mentioned")
+    education: Optional[str] = Field(None, description="Education requirement")
+    key_skills: List[str] = Field(default_factory=list, description="Top 3-5 required technical skills")
+    work_mode: Optional[str] = Field(None, description="Onsite / Hybrid / Remote")
+    
 class AnalyzeResponse(BaseModel):
     """Response for /analyze endpoint."""
     results: List[ResumeAnalysis]
     best_match_id: Optional[str] = Field(None, description="ID of best-matching resume (only when multiple resumes)")
     comparison_insight: Optional[str] = Field(None, description="LLM-generated comparison summary (only when multiple)")
+    jd_summary: Optional[JDSummary] = Field(None, description="Structured summary of the job description")
 
 
 # ============================================================
