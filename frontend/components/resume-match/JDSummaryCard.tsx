@@ -1,6 +1,7 @@
 /**
  * JDSummaryCard: displays structured JD information at a glance.
  * Shows hard requirements like location, salary, key skills, etc.
+ * Long fields are truncated with hover-to-expand tooltip.
  */
 "use client";
 
@@ -20,6 +21,23 @@ import type { JDSummary } from "@/lib/api";
 
 interface JDSummaryCardProps {
   summary: JDSummary;
+}
+
+// Truncate threshold for grid items
+const TRUNCATE_LENGTH = 60;
+
+function TruncatedValue({ value }: { value: string }) {
+  const isLong = value.length > TRUNCATE_LENGTH;
+  const displayed = isLong ? value.slice(0, TRUNCATE_LENGTH) + "…" : value;
+
+  return (
+    <p
+      className="font-medium leading-snug"
+      title={isLong ? value : undefined}
+    >
+      {displayed}
+    </p>
+  );
 }
 
 export function JDSummaryCard({ summary }: JDSummaryCardProps) {
@@ -88,6 +106,13 @@ export function JDSummaryCard({ summary }: JDSummaryCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Company brief */}
+        {summary.company_brief && (
+          <div className="text-sm text-slate-600 italic leading-relaxed border-l-2 border-slate-300 pl-3">
+            {summary.company_brief}
+          </div>
+        )}
+
         {/* Info grid */}
         {items.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -96,11 +121,11 @@ export function JDSummaryCard({ summary }: JDSummaryCardProps) {
                 <span className="text-slate-400 flex-shrink-0 mt-0.5">
                   {item.icon}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <span className="text-xs text-muted-foreground">
                     {item.label}
                   </span>
-                  <p className="font-medium truncate">{item.value}</p>
+                  <TruncatedValue value={item.value} />
                 </div>
               </div>
             ))}

@@ -58,6 +58,7 @@ class ResumeAnalysis(BaseModel):
 class JDSummary(BaseModel):
     """Structured summary extracted from a job description."""
     company: Optional[str] = Field(None, description="Company name")
+    company_brief: Optional[str] = Field(None, description="1-2 sentence company description from JD")
     title: Optional[str] = Field(None, description="Job title")
     location: Optional[str] = Field(None, description="Location (city, remote, hybrid, etc.)")
     employment_type: Optional[str] = Field(None, description="Full-time / Part-time / Internship / Contract")

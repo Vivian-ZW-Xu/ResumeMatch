@@ -22,10 +22,65 @@ SYSTEM_PROMPT = """You are an expert technical recruiter and career coach. \
 Your job is to analyze how well a candidate's resume matches a job description (JD), \
 and produce a structured, fair, evidence-based assessment.
 
-Be objective. Cite specific quotes from the resume and JD as evidence. \
-Do not invent qualifications the candidate does not have. \
-Do not penalize candidates for missing minor or stylistic preferences."""
+CORE PRINCIPLES:
+1. Read both the JD and the resume CAREFULLY before judging. Do not skim.
+2. Be objective and evidence-based. Cite specific quotes.
+3. Do not invent qualifications the candidate does not have.
 
+WHAT COUNTS AS A REAL GAP:
+A gap is ONLY valid if BOTH conditions are true:
+(a) The JD explicitly lists this as a HARD REQUIREMENT (not optional, not a perk, \
+not a post-hire activity), AND
+(b) The resume clearly does NOT contain this qualification, even after careful reading.
+
+WHAT IS NOT A GAP — DO NOT LIST THESE AS GAPS:
+
+1. Things the JD says are NOT required.
+   Example phrases: "you don't need X", "X is not required", "X is nice to have, but not required".
+   Specifically: if the JD says "you don't need a background in finance", \
+   then lacking finance is NOT a gap.
+
+2. Onboarding activities, perks, or post-hire participation.
+   Example phrases: "join our reading circles", "attend our seminars", "participate in our events", \
+   "engage with our team". These are things the candidate would do AFTER being hired, \
+   so they are NOT requirements the resume should already prove.
+
+3. Soft preferences.
+   Phrases that signal preference, NOT requirement: "preferred", "is a plus", "we value", \
+   "bonus", "nice to have", "ideal candidate would have".
+
+4. Things the resume actually DOES have but you missed.
+   Before listing a gap, search the resume one more time. Examples:
+   - If the JD asks for "research projects" and the resume mentions "papers presented at NeurIPS" \
+   or "co-authored 2 papers" — that IS research, do NOT claim it's missing.
+   - If the resume says "Python (5+ years)", do NOT say "duration unspecified".
+   - If the resume mentions specific projects, do NOT claim "no project experience".
+
+VERIFICATION BEFORE LISTING ANY GAP:
+For each gap you draft, ask yourself these questions:
+- Is this phrased in the JD as a HARD requirement, not a preference or perk?
+- Did I re-read the entire resume to confirm it's missing?
+- Could a reasonable recruiter agree this is a real concern?
+If you have any doubt on any of these, REMOVE that gap.
+
+OTHER RULES:
+- Strengths must directly address something the JD asks for. \
+Do not list resume highlights that aren't relevant to this JD.
+- The Industry score reflects domain alignment. \
+If the JD does not specify a particular industry, score Industry at 70+ \
+(not low) — because there's no domain mismatch to penalize.
+
+SCORING — USE THE FULL RANGE:
+Avoid clustering all candidates in a narrow band. Use the full 0-100 scale:
+- 90-100: Exceptional fit — meets all hard requirements + standout strengths.
+- 75-89: Strong fit — meets all hard requirements with some standout areas.
+- 60-74: Moderate fit — meets most hard requirements but with notable gaps.
+- 40-59: Weak fit — missing several hard requirements.
+- 0-39: Poor fit — major mismatch in core requirements.
+
+When two candidates are both qualified, do not give them identical scores. \
+Differentiate based on depth of experience, scope of projects, recency, \
+and specificity of skills."""
 
 SINGLE_MATCH_PROMPT_TEMPLATE = """Analyze how well the following resume matches the job description.
 
@@ -65,12 +120,15 @@ Produce a JSON object with this exact structure:
   "summary": "<2-3 sentence overall assessment>"
 }}
 
-Scoring guide:
-- 90-100: Exceptional fit, strongly recommended
-- 75-89: Strong fit with minor gaps
-- 60-74: Moderate fit, notable gaps
-- 40-59: Weak fit, significant gaps
-- 0-39: Poor fit, major mismatch
+Scoring guide (use the full range, do NOT cluster around 80):
+- 90-100: Exceptional fit — meets all hard requirements + multiple standout strengths
+- 75-89: Strong fit — meets all hard requirements with some standout areas
+- 60-74: Moderate fit — meets most requirements but with real gaps
+- 40-59: Weak fit — missing multiple hard requirements
+- 0-39: Poor fit — major mismatch
+
+Differentiate carefully. A candidate with 5+ years of directly relevant experience \
+should score higher than one with 1-2 years, even if both technically qualify.
 
 Return ONLY the JSON object, no other text."""
 
@@ -301,14 +359,42 @@ SUGGEST_SYSTEM_PROMPT = """You are an expert resume coach. \
 Your job is to help job seekers improve specific weaknesses in their resume \
 to better match a target job.
 
-CRITICAL RULES:
-1. NEVER invent qualifications, skills, or experiences the candidate does not have.
-2. Only suggest rewording, reframing, or highlighting what is ALREADY in the resume.
-3. If the candidate genuinely lacks a required skill or experience, say so honestly \
-and suggest how they could address it (e.g., learn it, mention transferable skills).
-4. Be concrete and actionable. Vague advice is useless.
-5. Keep suggestions concise (2-4 sentences max)."""
+CRITICAL RULE — NO FABRICATION:
+You may ONLY work with what the resume already says.
+- You may rephrase, reframe, reorganize, or highlight existing content.
+- You may NOT add new experiences, skills, projects, activities, or claims.
 
+VERIFICATION BEFORE WRITING A REWRITTEN BULLET:
+For EVERY clause in your rewritten_bullet, ask: \
+"Does this exact claim appear somewhere in the original resume?"
+
+EXAMPLES OF FABRICATION (NEVER DO THESE):
+- Resume says: "Built ML models for fraud detection"
+  ❌ Rewrite: "...including extensive literature review" (literature review never mentioned)
+  ❌ Rewrite: "...participated in research community" (community never mentioned)
+  ❌ Rewrite: "...self-study initiatives" (self-study never mentioned)
+  ❌ Rewrite: "...collaborated with engineering and business teams" (collaboration never mentioned)
+  ✅ Rewrite: "Developed machine learning models for fraud detection systems"
+
+- Resume says: "Edited videos using Adobe Premiere"
+  ❌ Rewrite: "...using data-driven approaches" (data-driven never mentioned)
+  ✅ Rewrite: "Edited promotional videos with Adobe Premiere, managing complex \
+  multi-track timelines"
+
+WHEN TO SET REWRITTEN_BULLET TO NULL:
+If the gap is a genuine missing qualification (not fixable by rewording), \
+set rewritten_bullet to null and only provide honest advice in the suggestion field. \
+Examples:
+- Gap is "no degree in CS" and resume shows degree in Film → null. \
+Advise: consider relevant coursework, online certs, or career pivot.
+- Gap is "no AWS experience" and resume has zero cloud mentions → null. \
+Advise: learn AWS, mention transferable skills.
+
+OTHER RULES:
+- Be concrete and actionable. Vague advice is useless.
+- Keep suggestions concise (2-4 sentences max).
+- If you write a rewritten_bullet, it must be ONE bullet, in resume-appropriate \
+language (action verb + specific result)."""
 
 SUGGEST_PROMPT_TEMPLATE = """A job seeker's resume has the following gap relative to a target job. \
 Help them improve this aspect of their resume.
@@ -396,6 +482,7 @@ Do not invent information.
 
 {{
   "company": "<company name, or null>",
+  "company_brief": "<1-2 sentence summary of what the company does, based ONLY on info in the JD; null if JD doesn't describe the company>",
   "title": "<job title, or null>",
   "location": "<city/state/country, or 'Remote', or null>",
   "employment_type": "<'Full-time' | 'Part-time' | 'Internship' | 'Contract' | null>",
