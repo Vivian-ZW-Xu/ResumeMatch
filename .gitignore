@@ -223,3 +223,11 @@ __marimo__/
 
 # VS Code
 .vscode/
+
+# Frontend
+node_modules/
+frontend/.next/
+frontend/node_modules/
+*.log
+.env*.local
+next-env.d.ts

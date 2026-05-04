@@ -75,21 +75,23 @@ Scoring guide:
 Return ONLY the JSON object, no other text."""
 
 
-COMPARISON_PROMPT_TEMPLATE = """Multiple candidates have been analyzed for the same job. \
-Provide a brief comparison.
+COMPARISON_PROMPT_TEMPLATE = """The user has uploaded multiple versions of their own resume \
+and wants to know which version best fits this specific job description.
 
 === JOB DESCRIPTION (excerpt) ===
 {jd_excerpt}
 
-=== CANDIDATES ===
+=== RESUME VERSIONS (analyzed) ===
 {candidates_summary}
 
 === TASK ===
+Recommend which version of their resume to submit for this job, and briefly explain why.
+
 Return a JSON object:
 
 {{
-  "best_match_id": "<id of the best matching candidate>",
-  "comparison_insight": "<2-3 sentences explaining why the best candidate stands out, and noting any close runners-up>"
+  "best_match_id": "<id of the recommended version>",
+  "comparison_insight": "<2-3 sentences explaining why this version is the best fit for THIS specific job, and what makes it stronger than the others>"
 }}
 
 Return ONLY the JSON object."""
