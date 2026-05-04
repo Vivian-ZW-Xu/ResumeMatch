@@ -52,7 +52,7 @@ Produce a JSON object with this exact structure:
       "resume_excerpt": "<short quote from resume supporting this>",
       "jd_excerpt": "<short quote from JD this matches>"
     }},
-    ... (3-5 strengths total)
+    ... (3 strengths total)
   ],
   "gaps": [
     {{
@@ -60,7 +60,7 @@ Produce a JSON object with this exact structure:
       "resume_excerpt": "<short quote from resume, or empty string if not applicable>",
       "jd_excerpt": "<short quote from JD requirement that's missing>"
     }},
-    ... (2-4 gaps total)
+    ... (2-3 gaps total)
   ],
   "summary": "<2-3 sentence overall assessment>"
 }}
@@ -130,14 +130,19 @@ def match_single(resume: ResumeInput, jd: str) -> ResumeAnalysis:
         summary=raw.get("summary", ""),
     )
 
-
 def compare_multiple(
     analyses: List[ResumeAnalysis],
     jd: str,
+    filenames: Optional[dict] = None,
 ) -> tuple[Optional[str], Optional[str]]:
     """
     When multiple resumes are analyzed, ask the LLM to pick the best
     and explain why.
+
+    Args:
+        analyses: List of ResumeAnalysis results
+        jd: Job description text
+        filenames: Optional dict mapping resume_id -> filename for clearer output
 
     Returns:
         (best_match_id, comparison_insight) or (None, None) if only one resume.
@@ -145,11 +150,14 @@ def compare_multiple(
     if len(analyses) < 2:
         return None, None
 
-    # Build candidates summary
+    # Build candidates summary using filenames when available
     candidates_lines = []
     for a in analyses:
+        display_name = (
+            filenames.get(a.resume_id, a.resume_id) if filenames else a.resume_id
+        )
         candidates_lines.append(
-            f"- ID: {a.resume_id}\n"
+            f"- {display_name}\n"
             f"  Overall: {a.overall_score}/100 "
             f"(skills={a.dimension_scores.skills}, "
             f"exp={a.dimension_scores.experience}, "
@@ -162,21 +170,26 @@ def compare_multiple(
     # Truncate JD for comparison context
     jd_excerpt = jd.strip()[:800]
 
+    # Build a mapping hint so LLM knows which name maps to which id
+    id_mapping = ""
+    if filenames:
+        id_mapping = "\n\nID-to-filename mapping (for your reference):\n" + "\n".join(
+            f"- {rid} = {fname}" for rid, fname in filenames.items()
+        )
+
     client = get_llm_client()
     prompt = COMPARISON_PROMPT_TEMPLATE.format(
         jd_excerpt=jd_excerpt,
         candidates_summary=candidates_summary,
-    )
+    ) + id_mapping + "\n\nIMPORTANT: In the comparison_insight, refer to resumes by their filename (not by ID like 'resume_1')."
 
     try:
         raw = client.chat_json(prompt=prompt, temperature=0.1)
         return raw.get("best_match_id"), raw.get("comparison_insight")
     except Exception as e:
-        # If comparison fails, fall back to highest score
         print(f"Comparison failed, falling back to highest score: {e}")
         best = max(analyses, key=lambda a: a.overall_score)
         return best.resume_id, None
-
 
 def analyze(resumes: List[ResumeInput], jd: str) -> AnalyzeResponse:
     """
@@ -197,7 +210,6 @@ def analyze(resumes: List[ResumeInput], jd: str) -> AnalyzeResponse:
             analyses.append(analysis)
         except Exception as e:
             print(f"Failed to analyze resume {r.id}: {e}")
-            # Skip failed ones rather than crash entire request
             continue
 
     if not analyses:
@@ -206,15 +218,19 @@ def analyze(resumes: List[ResumeInput], jd: str) -> AnalyzeResponse:
     # Sort by overall score, descending
     analyses.sort(key=lambda a: a.overall_score, reverse=True)
 
+    # Build id->filename mapping for clearer comparison output
+    filenames = {r.id: r.filename for r in resumes if r.filename}
+
     # Multi-resume comparison
-    best_match_id, comparison_insight = compare_multiple(analyses, jd)
+    best_match_id, comparison_insight = compare_multiple(
+        analyses, jd, filenames=filenames
+    )
 
     return AnalyzeResponse(
         results=analyses,
         best_match_id=best_match_id,
         comparison_insight=comparison_insight,
     )
-
 
 # ============================================================
 # Quick test

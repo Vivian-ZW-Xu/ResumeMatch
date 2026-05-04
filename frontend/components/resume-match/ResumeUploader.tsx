@@ -1,6 +1,7 @@
 /**
  * ResumeUploader: vertical list of uploaded resume versions
  * with selection checkboxes for analysis.
+ * Uses fixed-height layout: small dropzone + scrollable file list.
  */
 "use client";
 
@@ -23,7 +24,6 @@ interface ResumeUploaderProps {
 export function ResumeUploader({ resumes, onChange }: ResumeUploaderProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      // New uploads are selected by default
       const newResumes = acceptedFiles.map((file) => ({
         file,
         selected: true,
@@ -56,13 +56,13 @@ export function ResumeUploader({ resumes, onChange }: ResumeUploaderProps) {
   const selectedCount = resumes.filter((r) => r.selected).length;
 
   return (
-    <div className="space-y-4">
-      {/* Drop zone */}
+    <div className="flex flex-col h-full gap-3">
+      {/* Compact drop zone */}
       <div
         {...getRootProps()}
         className={`
-          border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-          transition-colors
+          border-2 border-dashed rounded-lg p-4 text-center cursor-pointer
+          transition-colors flex-shrink-0
           ${
             isDragActive
               ? "border-blue-500 bg-blue-50"
@@ -71,64 +71,69 @@ export function ResumeUploader({ resumes, onChange }: ResumeUploaderProps) {
         `}
       >
         <input {...getInputProps()} />
-        <Upload className="mx-auto h-8 w-8 text-slate-400 mb-2" />
+        <Upload className="mx-auto h-6 w-6 text-slate-400 mb-1" />
         {isDragActive ? (
-          <p className="text-sm font-medium">Drop the PDF files here...</p>
+          <p className="text-xs font-medium">Drop here...</p>
         ) : (
           <>
-            <p className="text-sm font-medium mb-1">
-              Drag & drop, or click to browse
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Upload different versions of your resume
+            <p className="text-xs font-medium">Drag & drop, or click</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Upload resume versions
             </p>
           </>
         )}
       </div>
 
-      {/* Uploaded files list */}
+      {/* File count */}
       {resumes.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-slate-700">
-            {selectedCount} of {resumes.length} version
-            {resumes.length > 1 ? "s" : ""} selected for analysis
-          </p>
+        <p className="text-xs font-medium text-slate-700 flex-shrink-0">
+          {selectedCount} of {resumes.length} selected
+        </p>
+      )}
 
-          <div className="border rounded-lg divide-y max-h-72 overflow-y-auto">
-            {resumes.map((resume, index) => (
-              <div
-                key={index}
-                className={`
-                  flex items-center gap-3 px-3 py-2.5
-                  ${resume.selected ? "bg-white" : "bg-slate-50 opacity-60"}
-                `}
-              >
-                <Checkbox
-                  checked={resume.selected}
-                  onCheckedChange={() => toggleSelection(index)}
-                  aria-label={`Select ${resume.file.name}`}
-                />
-                <FileText className="h-4 w-4 text-slate-500 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {resume.file.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {(resume.file.size / 1024).toFixed(1)} KB
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeFile(index)}
-                  aria-label="Remove file"
-                  className="flex-shrink-0 h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+      {/* Scrollable file list - takes remaining space */}
+      {resumes.length > 0 && (
+        <div className="border rounded-lg divide-y flex-1 overflow-y-auto min-h-0">
+          {resumes.map((resume, index) => (
+            <div
+              key={index}
+              className={`
+                flex items-center gap-2 px-3 py-2.5
+                ${resume.selected ? "bg-white" : "bg-slate-50 opacity-60"}
+              `}
+            >
+              <Checkbox
+                checked={resume.selected}
+                onCheckedChange={() => toggleSelection(index)}
+                aria-label={`Select ${resume.file.name}`}
+              />
+              <FileText className="h-4 w-4 text-slate-500 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {resume.file.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {(resume.file.size / 1024).toFixed(1)} KB
+                </p>
               </div>
-            ))}
-          </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeFile(index)}
+                aria-label="Remove file"
+                className="flex-shrink-0 h-7 w-7 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state when no files */}
+      {resumes.length === 0 && (
+        <div className="flex-1 flex items-center justify-center text-center text-xs text-muted-foreground">
+          No resume versions uploaded yet
         </div>
       )}
     </div>

@@ -52,7 +52,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header */}
       <header className="border-b bg-white">
-        <div className="container mx-auto px-6 py-4 max-w-4xl">
+        <div className="container mx-auto px-6 py-4 max-w-6xl">
           <h1 className="text-2xl font-bold">ResumeMatch</h1>
           <p className="text-sm text-muted-foreground">
             Find which version of your resume best matches a job description
@@ -61,39 +61,42 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="container mx-auto px-6 py-8 max-w-4xl">
+      <main className="container mx-auto px-6 py-8 max-w-6xl">
         <div className="space-y-6">
-          {/* Resume upload section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Resume Versions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResumeUploader resumes={resumes} onChange={setResumes} />
-            </CardContent>
-          </Card>
+          {/* Resume upload + JD input - side by side on desktop, stacked on mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Resume upload (1/3 width on desktop) */}
+            <Card className="md:col-span-1 flex flex-col h-[500px]">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle>Resume Versions</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 min-h-0">
+                <ResumeUploader resumes={resumes} onChange={setResumes} />
+              </CardContent>
+            </Card>
 
-          {/* JD input section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Job Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Label htmlFor="jd-input" className="sr-only">
-                Job Description
-              </Label>
-              <Textarea
-                id="jd-input"
-                placeholder="Paste the job description here..."
-                value={jd}
-                onChange={(e) => setJd(e.target.value)}
-                className="min-h-[200px] resize-none"
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                {jd.length} characters
-              </p>
-            </CardContent>
-          </Card>
+            {/* JD input (2/3 width on desktop) */}
+            <Card className="md:col-span-2 flex flex-col h-[500px]">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle>Job Description</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 min-h-0 flex flex-col">
+                <Label htmlFor="jd-input" className="sr-only">
+                  Job Description
+                </Label>
+                <Textarea
+                  id="jd-input"
+                  placeholder="Paste the job description here..."
+                  value={jd}
+                  onChange={(e) => setJd(e.target.value)}
+                  className="flex-1 resize-none"
+                />
+                <p className="text-xs text-muted-foreground mt-2 flex-shrink-0">
+                  {jd.length} characters
+                </p>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Analyze button */}
           <div className="flex justify-center">
@@ -147,29 +150,21 @@ export default function Home() {
                   ` (${results.results.length} versions ranked)`}
               </h2>
 
-              {/* Comparison insight (multi-resume only) */}
-              {results.comparison_insight && (
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardContent className="pt-6">
-                    <p className="text-sm text-blue-900">
-                      <strong>💡 Recommendation:</strong>{" "}
-                      {results.comparison_insight}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Result cards */}
               {results.results.map((analysis) => {
                 const file = selectedFiles.find(
                   (_, idx) => `resume_${idx + 1}` === analysis.resume_id
                 );
+                const isMultiple = results.results.length > 1;
+                const isBest = results.best_match_id === analysis.resume_id;
                 return (
                   <ResultCard
                     key={analysis.resume_id}
                     analysis={analysis}
                     filename={file?.name}
-                    isBestMatch={results.best_match_id === analysis.resume_id}
+                    isBestMatch={isBest}
+                    collapsible={isMultiple}
+                    defaultExpanded={!isMultiple || isBest}
                   />
                 );
               })}
