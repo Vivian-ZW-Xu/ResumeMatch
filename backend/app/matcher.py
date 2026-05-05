@@ -88,18 +88,11 @@ Return a JSON object:
 
 RUBRIC RULES (most important):
 - Build rubric items from HARD REQUIREMENTS. Cover EVERY hard requirement.
-- THEN add 2-3 DEPTH-DIFFERENTIATION items so candidates with more substantial \
-experience score higher than candidates who barely meet the minimum bar. Examples:
-  - "Has 3+ years of relevant professional experience?" (experience, weight 6-7)
-  - "Has experience with [JD's specific domain, e.g. quantitative finance / NLP / production ML systems]?" (experience, weight 5-7)
-  - "Has demonstrated independent research output (papers, open-source projects, advanced technical depth)?" (experience, weight 5-6)
-  - "Has experience at scale or in production (e.g. millions of users, sub-second latency, 100K+ requests/sec)?" (experience, weight 5-6)
+- THEN add 2-3 DEPTH-DIFFERENTIATION items, BUT THESE MUST REFLECT THE JD'S CORE EMPHASIS \
+(see "DEPTH ITEMS MUST REFLECT JD'S EMPHASIS" below).
 - 6 to 9 rubric items total. Mix of threshold items (hard requirements) and depth items.
 - Each criterion must be ATOMIC (one yes/no question, not compound).
 - Each criterion must be VERIFIABLE from a resume (a recruiter can decide yes/no).
-- Each depth-differentiation item must be SPECIFIC enough that a senior 5-year candidate \
-with deep experience would clearly score "yes", while a fresh student with only an internship \
-would score "partial" or "no".
 
 DIMENSION MAPPING:
 - skills: technical skills, languages, tools, frameworks
@@ -115,6 +108,46 @@ WEIGHT GUIDE:
 
 OTHER CONSTRAINTS:
 - Use simple ids: "r1", "r2", "r3"... (no brackets, no special chars).
+
+DEPTH ITEMS MUST REFLECT JD'S EMPHASIS — VERY IMPORTANT:
+Before writing depth items, identify what the JD ACTUALLY values. Read the language carefully.
+
+JD ROLE ARCHETYPES AND THEIR DEPTH CRITERIA:
+
+1. RESEARCH-HEAVY (quant DS, research scientist, applied scientist).
+Signal phrases in JD: "develop hypotheses", "research", "literature review", \
+"test theories", "communicate complex ideas", "creatively approach data analysis", \
+"academic community", "rigorous", "explore". \
+Depth criteria for this archetype:
+  - "Has experience formulating and testing data-driven hypotheses?"
+  - "Has experience translating analytical findings into recommendations or strategy?"
+  - "Has experience communicating technical findings to non-technical stakeholders?"
+  - "Has demonstrated independent research output (papers, deep statistical analysis)?"
+  AVOID for this archetype: production scale, latency optimization, deployment pipelines — \
+these are NOT what a research role values.
+
+2. ENGINEERING-HEAVY (MLE, infra, platform engineer).
+Signal phrases: "production", "latency", "scale", "deployment", "infra", \
+"throughput", "distributed", "reliability". \
+Depth criteria:
+  - "Has experience deploying systems at production scale (millions of users / requests)?"
+  - "Has experience optimizing system latency or throughput?"
+  - "Has experience with model serving / production ML pipelines?"
+  AVOID: hypothesis testing, stakeholder communication, literature reviews.
+
+3. PRODUCT/ANALYTICS (data analyst, product DS).
+Signal phrases: "A/B test", "dashboards", "metrics", "growth", "experimentation", \
+"product decisions". \
+Depth criteria:
+  - "Has experience designing and analyzing A/B experiments?"
+  - "Has experience building dashboards or metrics that drove business decisions?"
+  - "Has experience translating data analysis into product recommendations?"
+
+CRITICAL RULE: \
+Do NOT use generic depth items like "experience with cutting-edge methodologies" or \
+"experience working with large datasets" if the JD's emphasis is research-heavy — those \
+are engineering-flavored and will reward the wrong type of candidate. \
+Match the depth items to what the JD's signal phrases actually emphasize.
 
 STRICTNESS FOR "RESEARCH PROJECT WITH REAL-WORLD DATA":
 If the JD requires a research project with real-world data, the rubric MUST distinguish \
