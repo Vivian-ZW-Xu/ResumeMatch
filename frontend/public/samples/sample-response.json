@@ -1,0 +1,247 @@
+{
+  "results": [
+    {
+      "resume_id": "resume_2",
+      "overall_score": 88,
+      "dimension_scores": {
+        "skills": 100,
+        "experience": 85,
+        "education": 100,
+        "industry": 65
+      },
+      "strengths": [
+        {
+          "point": "Pursuing a Master's in Data Science with strong ML coursework alignment.",
+          "resume_excerpt": "M.S. in Data Science, GPA: 3.67/4.00 Sep 2025 - present (Expected: 05/27)",
+          "jd_excerpt": "Currently pursuing a Master degree with a background in computer science, machine learning, or similar fields"
+        },
+        {
+          "point": "Proficient with PyTorch and deep neural network architectures (CNN, RNN, LSTM, Transformer).",
+          "resume_excerpt": "ML Frameworks: PyTorch, scikit-learn, HuggingFace Transformers, XGBoost; Deep Learning: CNN, RNN, LSTM, Transformer (BERT/GPT)",
+          "jd_excerpt": "Solid knowledge and experience with at least one popular deep learning framework (e.g., PyTorch, TensorFlow) and familiarity with deep neural network architectures"
+        },
+        {
+          "point": "Hands-on production ML experience deploying real-time inference pipelines with sub-second latency.",
+          "resume_excerpt": "Built a face recognition pipeline using RetinaFace + FaceNet to generate embeddings for identity matching, achieving <800ms inference latency per 1-minute video",
+          "jd_excerpt": "Own and optimize the full-stack ML pipeline—from algorithm design to system infrastructure"
+        },
+        {
+          "point": "Direct experience with retrieval and ranking systems aligned with the recommendation domain.",
+          "resume_excerpt": "Applied ML: Multimodal Learning, Content Understanding, NLP, Ranking & Retrieval",
+          "jd_excerpt": "Drive the development of industry-leading recommendation systems"
+        }
+      ],
+      "gaps": [
+        {
+          "point": "No first-author publications at top AI conferences (NeurIPS / ICML / ICLR).",
+          "resume_excerpt": null,
+          "jd_excerpt": "Strong first-author publications record in top AI conferences or journals"
+        }
+      ],
+      "summary": "Strong fit for the TikTok MLE Recommendation role. The candidate's production ML pipeline experience (sub-second latency multimodal retrieval at Vitongue) and explicit ranking/retrieval skills directly map to TikTok's core recommendation work. The only gap is publication record, which is a preferred (not required) qualification.",
+      "resume_content": "",
+      "rubric_results": [
+        {
+          "id": "r1",
+          "criterion": "Currently pursuing a Master's degree in CS, ML, or a related field?",
+          "verdict": "yes",
+          "evidence": "M.S. in Data Science, GPA: 3.67/4.00 Sep 2025 - present (Expected: 05/27)",
+          "reasoning": "M.S. in Data Science directly qualifies."
+        },
+        {
+          "id": "r2",
+          "criterion": "Proficient with at least one popular deep learning framework (PyTorch / TensorFlow)?",
+          "verdict": "yes",
+          "evidence": "ML Frameworks: PyTorch, scikit-learn, HuggingFace Transformers, XGBoost",
+          "reasoning": "PyTorch is explicitly listed and used across multiple projects."
+        },
+        {
+          "id": "r3",
+          "criterion": "Familiar with deep neural network architectures (CNN, RNN, Transformer, etc.)?",
+          "verdict": "yes",
+          "evidence": "Deep Learning: CNN, RNN, LSTM, Transformer (BERT/GPT)",
+          "reasoning": "Resume lists comprehensive DNN architecture experience including production use of FaceNet, Whisper, Phi-2, RoBERTa."
+        },
+        {
+          "id": "r4",
+          "criterion": "Has hands-on experience with production ML pipelines or model deployment at scale?",
+          "verdict": "yes",
+          "evidence": "Production ML: Real-time inference (<800ms latency), model deployment pipelines, batch inference optimization",
+          "reasoning": "Vitongue project demonstrates end-to-end deployment with concrete latency targets."
+        },
+        {
+          "id": "r5",
+          "criterion": "Has experience with ranking, retrieval, or recommendation systems?",
+          "verdict": "yes",
+          "evidence": "Implemented semantic indexing with Whisper (large-v3-turbo) and Milvus vector database, supporting natural language query understanding and content-based retrieval over large-scale video segments",
+          "reasoning": "Direct experience with vector retrieval and content-based search; SMOLSolver project also designed for content scoring/ranking."
+        },
+        {
+          "id": "r6",
+          "criterion": "Has first-author publications at top AI conferences (NeurIPS / ICML / ICLR)?",
+          "verdict": "no",
+          "evidence": null,
+          "reasoning": "No publications listed; this is a preferred (not required) qualification."
+        }
+      ]
+    },
+    {
+      "resume_id": "resume_1",
+      "overall_score": 72,
+      "dimension_scores": {
+        "skills": 80,
+        "experience": 55,
+        "education": 100,
+        "industry": 65
+      },
+      "strengths": [
+        {
+          "point": "Pursuing a Master's in Data Science with foundational ML coursework.",
+          "resume_excerpt": "M.S. in Data Science Sep 2025 - May 2027 (Expected)",
+          "jd_excerpt": "Currently pursuing a Master degree with a background in computer science, machine learning, or similar fields"
+        },
+        {
+          "point": "Familiar with PyTorch and Transformer architectures.",
+          "resume_excerpt": "ML & AI: predictive modeling, text analytics, deep learning fundamentals (PyTorch, Transformers)",
+          "jd_excerpt": "Solid knowledge and experience with at least one popular deep learning framework"
+        }
+      ],
+      "gaps": [
+        {
+          "point": "Limited evidence of production ML pipeline or model deployment work — Vitongue role is described only at a high level.",
+          "resume_excerpt": "Built and deployed a real-time multimodal retrieval system, coordinating across engineering and QA teams to validate performance on 100+ samples and ensure production readiness",
+          "jd_excerpt": "Own and optimize the full-stack ML pipeline—from algorithm design to system infrastructure"
+        },
+        {
+          "point": "No mention of ranking, retrieval, or recommendation systems — a core focus of this role.",
+          "resume_excerpt": null,
+          "jd_excerpt": "Drive the development of industry-leading recommendation systems"
+        },
+        {
+          "point": "No first-author publications at top AI conferences.",
+          "resume_excerpt": null,
+          "jd_excerpt": "Strong first-author publications record in top AI conferences or journals"
+        }
+      ],
+      "summary": "This Data Scientist-oriented version meets the educational and basic ML framework requirements, but the resume framing emphasizes business analytics and brand marketing rather than the production ML and recommendation systems work TikTok prioritizes. The MLE-oriented resume version is a substantially stronger fit for this role.",
+      "resume_content": "",
+      "rubric_results": [
+        {
+          "id": "r1",
+          "criterion": "Currently pursuing a Master's degree in CS, ML, or a related field?",
+          "verdict": "yes",
+          "evidence": "M.S. in Data Science Sep 2025 - May 2027 (Expected)",
+          "reasoning": "M.S. in Data Science directly qualifies."
+        },
+        {
+          "id": "r2",
+          "criterion": "Proficient with at least one popular deep learning framework (PyTorch / TensorFlow)?",
+          "verdict": "yes",
+          "evidence": "ML & AI: predictive modeling, text analytics, deep learning fundamentals (PyTorch, Transformers)",
+          "reasoning": "PyTorch listed but framed at fundamentals level."
+        },
+        {
+          "id": "r3",
+          "criterion": "Familiar with deep neural network architectures (CNN, RNN, Transformer, etc.)?",
+          "verdict": "partial",
+          "evidence": "deep learning fundamentals (PyTorch, Transformers)",
+          "reasoning": "Mentioned at a general level; less specific architectural depth than a typical MLE resume."
+        },
+        {
+          "id": "r4",
+          "criterion": "Has hands-on experience with production ML pipelines or model deployment at scale?",
+          "verdict": "partial",
+          "evidence": "Built and deployed a real-time multimodal retrieval system, coordinating across engineering and QA teams to validate performance on 100+ samples and ensure production readiness",
+          "reasoning": "Production deployment is mentioned but described at a high level without latency / throughput / pipeline specifics."
+        },
+        {
+          "id": "r5",
+          "criterion": "Has experience with ranking, retrieval, or recommendation systems?",
+          "verdict": "no",
+          "evidence": null,
+          "reasoning": "No mention of ranking, retrieval, or recommendation systems in this resume framing."
+        },
+        {
+          "id": "r6",
+          "criterion": "Has first-author publications at top AI conferences (NeurIPS / ICML / ICLR)?",
+          "verdict": "no",
+          "evidence": null,
+          "reasoning": "No publications listed."
+        }
+      ]
+    }
+  ],
+  "best_match_id": "resume_2",
+  "comparison_insight": "ZhuweiXu_MLE_Resume.pdf is a substantially stronger fit for this TikTok MLE Recommendation role (88 vs 72). The MLE version explicitly surfaces production ML pipeline work (sub-800ms multimodal retrieval at Vitongue), ranking & retrieval skills, and content-scoring research (SMOLSolver) — all directly aligned with TikTok's core recommendation work. The DataScientist version frames the same Vitongue project at a much higher level and emphasizes business analytics and brand marketing, leaving the production ML and recommendation-system criteria largely unaddressed.",
+  "jd_summary": {
+    "company": "TikTok",
+    "company_brief": "TikTok's Recommendation algorithm team drives critical product decisions and platform growth through machine learning research and engineering on production recommendation models.",
+    "title": "Machine Learning Engineer Intern (TikTok-Recommendation)",
+    "location": "San Jose, CA",
+    "employment_type": "Internship",
+    "duration": "12 weeks (Summer 2026)",
+    "salary": "$45/hour",
+    "education": "Currently pursuing a Master degree with a background in computer science, machine learning, or similar fields",
+    "key_skills": ["PyTorch", "Deep Neural Networks", "Recommendation Systems"],
+    "work_mode": "Onsite"
+  },
+  "jd_requirements": {
+    "hard_requirements": [
+      "Currently pursuing a Master's degree in CS, ML, or a related field",
+      "Proficient with at least one popular deep learning framework (PyTorch or TensorFlow)",
+      "Familiarity with deep neural network architectures",
+      "Able to commit 12 weeks during Summer 2026"
+    ],
+    "nice_to_haves": [
+      "Research experience in applied ML / ML infrastructure / large-scale recommendation systems",
+      "First-author publications at top AI conferences (NeurIPS, ICML, ICLR, ACL, EMNLP, NAACL)",
+      "Proficient in C/C++, Python, and shell programming",
+      "Internship experience in an AI research organization"
+    ],
+    "job_duties": [
+      "Drive the development of industry-leading recommendation systems",
+      "Deliver end-to-end ML solutions for content understanding, LLMs, robustness, and fairness",
+      "Own and optimize the full-stack ML pipeline",
+      "Collaborate with cross-functional teams"
+    ],
+    "not_required": [],
+    "evaluation_rubric": [
+      {
+        "id": "r1",
+        "criterion": "Currently pursuing a Master's degree in CS, ML, or a related field?",
+        "dimension": "education",
+        "weight": 8
+      },
+      {
+        "id": "r2",
+        "criterion": "Proficient with at least one popular deep learning framework (PyTorch / TensorFlow)?",
+        "dimension": "skills",
+        "weight": 8
+      },
+      {
+        "id": "r3",
+        "criterion": "Familiar with deep neural network architectures (CNN, RNN, Transformer, etc.)?",
+        "dimension": "skills",
+        "weight": 7
+      },
+      {
+        "id": "r4",
+        "criterion": "Has hands-on experience with production ML pipelines or model deployment at scale?",
+        "dimension": "experience",
+        "weight": 7
+      },
+      {
+        "id": "r5",
+        "criterion": "Has experience with ranking, retrieval, or recommendation systems?",
+        "dimension": "experience",
+        "weight": 6
+      },
+      {
+        "id": "r6",
+        "criterion": "Has first-author publications at top AI conferences (NeurIPS / ICML / ICLR)?",
+        "dimension": "experience",
+        "weight": 3
+      }
+    ]
+  }
+}

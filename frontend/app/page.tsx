@@ -27,6 +27,7 @@ const SAMPLE_FILES = [
   "ZhuweiXu_MLE_Resume.pdf",
 ];
 const SAMPLE_JD_PATH = "/samples/tiktok-mle-jd.txt";
+const SAMPLE_RESPONSE_PATH = "/samples/sample-response.json";
 
 async function loadSampleFile(filename: string): Promise<File> {
   const response = await fetch(`/samples/${filename}`);
@@ -87,10 +88,28 @@ export default function Home() {
     setError(null);
     setResults(null);
 
+    // Detect if we're running with sample data → use cached response
+    const isSample =
+      selectedFiles.length === SAMPLE_FILES.length &&
+      selectedFiles.every((f) => SAMPLE_FILES.includes(f.name));
+
     try {
-      const response = await analyzeUpload(selectedFiles, jd);
-      setResults(response);
-      console.log("Analysis complete:", response);
+      if (isSample) {
+        // Brief delay so the loading state is visible
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const response = await fetch(SAMPLE_RESPONSE_PATH);
+        if (!response.ok) {
+          throw new Error("Failed to load sample response");
+        }
+        const cached: AnalyzeResponse = await response.json();
+        setResults(cached);
+        console.log("Sample analysis loaded from cache");
+      } else {
+        const response = await analyzeUpload(selectedFiles, jd);
+        setResults(response);
+        console.log("Analysis complete:", response);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Analysis failed";
       setError(message);
