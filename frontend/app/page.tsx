@@ -18,6 +18,37 @@ import { ResultCard } from "@/components/resume-match/ResultCard";
 import { JDSummaryCard } from "@/components/resume-match/JDSummaryCard";
 import { analyzeUpload, AnalyzeResponse } from "@/lib/api";
 
+// ============================================================
+// Sample data for the "Try with sample data" button
+// ============================================================
+
+const SAMPLE_FILES = [
+  "ZhuweiXu_DataScience.pdf",
+  "MLE_ZhuweiXu_Resume.pdf",
+];
+const SAMPLE_JD_PATH = "/samples/two-sigma-jd.txt";
+
+async function loadSampleFile(filename: string): Promise<File> {
+  const response = await fetch(`/samples/${filename}`);
+  if (!response.ok) {
+    throw new Error(`Failed to load sample file: ${filename}`);
+  }
+  const blob = await response.blob();
+  return new File([blob], filename, { type: "application/pdf" });
+}
+
+async function loadSampleJd(): Promise<string> {
+  const response = await fetch(SAMPLE_JD_PATH);
+  if (!response.ok) {
+    throw new Error("Failed to load sample JD");
+  }
+  return await response.text();
+}
+
+// ============================================================
+// Main component
+// ============================================================
+
 export default function Home() {
   const [jd, setJd] = useState("");
   const [resumes, setResumes] = useState<ResumeFile[]>([]);
@@ -27,6 +58,29 @@ export default function Home() {
 
   // Only files marked as selected go into analysis
   const selectedFiles = resumes.filter((r) => r.selected).map((r) => r.file);
+
+  const handleLoadSample = async () => {
+    setError(null);
+    try {
+      const [files, jdText] = await Promise.all([
+        Promise.all(SAMPLE_FILES.map(loadSampleFile)),
+        loadSampleJd(),
+      ]);
+
+      const sampleResumes: ResumeFile[] = files.map((file) => ({
+        file,
+        selected: true,
+      }));
+
+      setResumes(sampleResumes);
+      setJd(jdText);
+      setResults(null);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load sample data";
+      setError(message);
+    }
+  };
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -99,8 +153,16 @@ export default function Home() {
             </Card>
           </div>
 
-          {/* Analyze button */}
-          <div className="flex justify-center">
+          {/* Analyze + Sample buttons */}
+          <div className="flex justify-center gap-3">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleLoadSample}
+              disabled={loading}
+            >
+              Try with sample data
+            </Button>
             <Button
               size="lg"
               onClick={handleAnalyze}
@@ -145,7 +207,6 @@ export default function Home() {
           {/* Results */}
           {results && !loading && (
             <div className="space-y-4">
-              
               {/* JD Summary at top */}
               {results.jd_summary && (
                 <JDSummaryCard

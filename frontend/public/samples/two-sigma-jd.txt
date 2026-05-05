@@ -1,0 +1,25 @@
+Data Scientist - Campus Full-Time
+Two Sigma
+
+Position Summary
+
+Two Sigma is a leading quantitative investment management and trading firm. The company applies a scientific approach to investing, combining cutting-edge technology, artificial intelligence, data science, and quantitative research with rigorous human inquiry to capitalize on market opportunities and deliver alpha for investors.
+
+Our team of engineers, quantitative researchers and data scientists looks beyond the traditional to test hypotheses and develop creative solutions to some of the world's most complex economic problems.
+
+You will take on the following responsibilities:
+- Independently research and develop hypotheses based on diverse and unique real-world datasets.
+- Conduct literature reviews to develop and apply cutting-edge methodologies for extracting meaningful signals from our vast data holdings.
+- Partner with our engineers and business stakeholders to rigorously explore and test your theories.
+
+You should possess the following qualifications:
+- Degree in a technical or quantitative discipline, like chemistry, computer science, economics, statistics, or quantitative social science with an applied empirical focus (all levels welcome, from bachelor's to doctorate)
+- Proficient in Python and SQL
+- Performed an in-depth research project, examining real-world data
+- Are an independent thinker who can creatively approach data analysis and communicate complex ideas clearly
+
+You don't need a background in finance. It's nice to have, but more than half of Two Sigma's employees come from outside the finance industry. If you've got the research skills, we can teach you the financial aspects of the job.
+
+Location: New York, NY
+Work mode: Hybrid
+Salary: $165,000 (Bachelors), $170,000 (Masters), $190,000 (PhD)
