@@ -2,7 +2,7 @@
 Pydantic schemas for request/response data structures.
 """
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Literal
 
 
 # ============================================================
@@ -20,6 +20,38 @@ class AnalyzeRequest(BaseModel):
     """Request body for /analyze endpoint."""
     resumes: List[ResumeInput] = Field(..., description="One or more resumes to analyze")
     jd: str = Field(..., description="Job description text")
+
+
+# ============================================================
+# Rubric schemas (new — for rubric-based scoring)
+# ============================================================
+
+class RubricItem(BaseModel):
+    """One yes/no checkpoint extracted from the JD."""
+    id: str = Field(..., description="Short unique id like 'r1'")
+    criterion: str = Field(..., description="Single yes/no question, e.g. 'Has 3+ years Python experience?'")
+    dimension: Literal["skills", "experience", "education", "industry"] = Field(
+        ..., description="Which dimension this criterion contributes to"
+    )
+    weight: int = Field(..., ge=1, le=10, description="Importance weight, 1-10")
+
+
+class RubricResult(BaseModel):
+    """LLM's verdict on a single rubric item for a single resume."""
+    id: str = Field(..., description="Matches the rubric item id")
+    criterion: str = Field(..., description="Echo of the criterion text")
+    verdict: Literal["yes", "partial", "no"] = Field(..., description="Whether the resume meets it")
+    evidence: Optional[str] = Field(None, description="Direct quote from resume, empty if 'no'")
+    reasoning: Optional[str] = Field(None, description="One-sentence explanation")
+
+
+class JDRequirements(BaseModel):
+    """Structured breakdown of JD requirements."""
+    hard_requirements: List[str] = Field(default_factory=list)
+    nice_to_haves: List[str] = Field(default_factory=list)
+    job_duties: List[str] = Field(default_factory=list)
+    not_required: List[str] = Field(default_factory=list)
+    evaluation_rubric: List[RubricItem] = Field(default_factory=list)
 
 
 # ============================================================
@@ -50,6 +82,11 @@ class ResumeAnalysis(BaseModel):
     gaps: List[MatchEvidence] = Field(default_factory=list)
     summary: str = Field(..., description="Overall 2-3 sentence summary")
     resume_content: str = Field(default="", description="Original resume text (for follow-up suggestions)")
+    rubric_results: List[RubricResult] = Field(
+        default_factory=list,
+        description="Per-criterion verdicts for transparency / debugging",
+    )
+
 
 # ============================================================
 # JD Summary schemas
@@ -67,13 +104,18 @@ class JDSummary(BaseModel):
     education: Optional[str] = Field(None, description="Education requirement")
     key_skills: List[str] = Field(default_factory=list, description="Top 3-5 required technical skills")
     work_mode: Optional[str] = Field(None, description="Onsite / Hybrid / Remote")
-    
+
+
 class AnalyzeResponse(BaseModel):
     """Response for /analyze endpoint."""
     results: List[ResumeAnalysis]
     best_match_id: Optional[str] = Field(None, description="ID of best-matching resume (only when multiple resumes)")
     comparison_insight: Optional[str] = Field(None, description="LLM-generated comparison summary (only when multiple)")
     jd_summary: Optional[JDSummary] = Field(None, description="Structured summary of the job description")
+    jd_requirements: Optional[JDRequirements] = Field(
+        None,
+        description="Structured breakdown of JD requirements (rubric, hard/nice-to-have/duties)",
+    )
 
 
 # ============================================================

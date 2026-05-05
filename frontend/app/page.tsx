@@ -145,11 +145,14 @@ export default function Home() {
           {/* Results */}
           {results && !loading && (
             <div className="space-y-4">
+              
               {/* JD Summary at top */}
               {results.jd_summary && (
-                <JDSummaryCard summary={results.jd_summary} />
+                <JDSummaryCard
+                  summary={results.jd_summary}
+                  requirements={results.jd_requirements}
+                />
               )}
-
               <h2 className="text-xl font-bold">
                 Results
                 {results.results.length > 1 &&

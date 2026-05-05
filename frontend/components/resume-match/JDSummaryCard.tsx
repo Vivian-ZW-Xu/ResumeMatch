@@ -1,10 +1,12 @@
 /**
  * JDSummaryCard: displays structured JD information at a glance.
- * Shows hard requirements like location, salary, key skills, etc.
- * Long fields are truncated with hover-to-expand tooltip.
+ * Shows company info, location, salary, key skills, etc.
+ * Optionally shows hard requirements / nice-to-haves breakdown
+ * if jd_requirements is provided.
  */
 "use client";
 
+import { useState } from "react";
 import {
   Building2,
   MapPin,
@@ -14,13 +16,17 @@ import {
   GraduationCap,
   Wrench,
   Home,
+  ChevronDown,
+  CheckSquare,
+  Star,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { JDSummary } from "@/lib/api";
+import type { JDSummary, JDRequirements } from "@/lib/api";
 
 interface JDSummaryCardProps {
   summary: JDSummary;
+  requirements?: JDRequirements | null;
 }
 
 // Truncate threshold for grid items
@@ -40,7 +46,91 @@ function TruncatedValue({ value }: { value: string }) {
   );
 }
 
-export function JDSummaryCard({ summary }: JDSummaryCardProps) {
+// ============================================================
+// Collapsible requirements section
+// ============================================================
+
+interface RequirementsSectionProps {
+  requirements: JDRequirements;
+}
+
+function RequirementsSection({ requirements }: RequirementsSectionProps) {
+  const [open, setOpen] = useState(false);
+
+  const hardCount = requirements.hard_requirements.length;
+  const niceCount = requirements.nice_to_haves.length;
+
+  // Don't render if there's nothing to show
+  if (hardCount === 0 && niceCount === 0) return null;
+
+  return (
+    <div className="pt-2 border-t border-slate-200">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded px-2 -mx-2 transition-colors"
+      >
+        <span>
+          Requirements breakdown ({hardCount} hard
+          {niceCount > 0 ? `, ${niceCount} nice-to-have` : ""})
+        </span>
+        <ChevronDown
+          className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-3">
+          {hardCount > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 mb-1.5">
+                <CheckSquare className="h-3 w-3" />
+                Hard Requirements
+              </div>
+              <ul className="space-y-1 pl-1">
+                {requirements.hard_requirements.map((req, i) => (
+                  <li
+                    key={i}
+                    className="text-xs text-slate-700 leading-relaxed flex gap-2"
+                  >
+                    <span className="text-blue-400 flex-shrink-0">•</span>
+                    <span>{req}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {niceCount > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 mb-1.5">
+                <Star className="h-3 w-3" />
+                Nice to Have
+              </div>
+              <ul className="space-y-1 pl-1">
+                {requirements.nice_to_haves.map((req, i) => (
+                  <li
+                    key={i}
+                    className="text-xs text-slate-700 leading-relaxed flex gap-2"
+                  >
+                    <span className="text-amber-400 flex-shrink-0">•</span>
+                    <span>{req}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// Main component
+// ============================================================
+
+export function JDSummaryCard({ summary, requirements }: JDSummaryCardProps) {
   const headerTitle = summary.title || "Job Position";
   const headerSubtitle = summary.company || null;
 
@@ -151,6 +241,11 @@ export function JDSummaryCard({ summary }: JDSummaryCardProps) {
               </div>
             </div>
           </div>
+        )}
+
+        {/* NEW: Requirements breakdown (collapsible) */}
+        {requirements && (
+          <RequirementsSection requirements={requirements} />
         )}
       </CardContent>
     </Card>

@@ -1,6 +1,7 @@
 /**
  * ResultCard: displays the full analysis result for a single resume.
- * Includes radar chart, dimension breakdown, strengths, and gaps.
+ * Includes radar chart, dimension breakdown, strengths, gaps,
+ * and rubric evaluation transparency.
  * Each gap has a "Get suggestion" button to fetch improvement advice.
  */
 "use client";
@@ -21,6 +22,10 @@ import {
   ChevronDown,
   Lightbulb,
   Loader2,
+  ListChecks,
+  Check,
+  CircleDashed,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +34,11 @@ import {
   suggestImprovement,
   type ResumeAnalysis,
   type MatchEvidence,
+  type RubricResult,
 } from "@/lib/api";
 
 // ============================================================
-// Helper component: collapsible section
+// Helper: collapsible section
 // ============================================================
 
 interface CollapsibleSectionProps {
@@ -70,7 +76,7 @@ function CollapsibleSection({
 }
 
 // ============================================================
-// Helper component: gap item with "Get suggestion" button
+// Helper: gap item with "Get suggestion" button
 // ============================================================
 
 interface GapItemProps {
@@ -121,7 +127,6 @@ function GapItem({ gap, resumeContent, jd }: GapItemProps) {
         </p>
       )}
 
-      {/* Get suggestion button / suggestion display */}
       {!suggestion && !loading && (
         <Button
           variant="outline"
@@ -173,7 +178,56 @@ function GapItem({ gap, resumeContent, jd }: GapItemProps) {
 }
 
 // ============================================================
-// Main component: ResultCard
+// Helper: rubric result item (yes/partial/no badge)
+// ============================================================
+
+function RubricItem({ result }: { result: RubricResult }) {
+  // verdict → icon, color, label
+  const verdictMeta = {
+    yes: {
+      icon: <Check className="h-3.5 w-3.5" />,
+      bg: "bg-green-100 text-green-700 border-green-300",
+      label: "Yes",
+    },
+    partial: {
+      icon: <CircleDashed className="h-3.5 w-3.5" />,
+      bg: "bg-amber-100 text-amber-700 border-amber-300",
+      label: "Partial",
+    },
+    no: {
+      icon: <X className="h-3.5 w-3.5" />,
+      bg: "bg-red-100 text-red-700 border-red-300",
+      label: "No",
+    },
+  }[result.verdict];
+
+  return (
+    <div className="flex items-start gap-2 py-1.5">
+      <span
+        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-xs font-medium flex-shrink-0 ${verdictMeta.bg}`}
+      >
+        {verdictMeta.icon}
+        {verdictMeta.label}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-slate-700">{result.criterion}</p>
+        {result.evidence && (
+          <p className="text-xs text-muted-foreground italic mt-0.5">
+            📄 &quot;{result.evidence}&quot;
+          </p>
+        )}
+        {result.reasoning && result.verdict !== "yes" && (
+          <p className="text-xs text-slate-500 mt-0.5">
+            {result.reasoning}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Main component
 // ============================================================
 
 interface ResultCardProps {
@@ -195,7 +249,6 @@ export function ResultCard({
 }: ResultCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
-  // Format data for radar chart
   const radarData = [
     { dimension: "Skills", value: analysis.dimension_scores.skills },
     { dimension: "Experience", value: analysis.dimension_scores.experience },
@@ -203,7 +256,6 @@ export function ResultCard({
     { dimension: "Industry", value: analysis.dimension_scores.industry },
   ];
 
-  // Score color based on value
   const scoreColor = (score: number) => {
     if (score >= 80) return "text-green-600";
     if (score >= 60) return "text-yellow-600";
@@ -215,6 +267,19 @@ export function ResultCard({
       setExpanded((prev) => !prev);
     }
   };
+
+  // Rubric summary (e.g. "5 / 7 met")
+  const rubricSummary = (() => {
+    const total = analysis.rubric_results.length;
+    if (total === 0) return null;
+    const yesCount = analysis.rubric_results.filter(
+      (r) => r.verdict === "yes"
+    ).length;
+    const partialCount = analysis.rubric_results.filter(
+      (r) => r.verdict === "partial"
+    ).length;
+    return { total, yesCount, partialCount };
+  })();
 
   return (
     <Card className={isBestMatch ? "border-blue-500 border-2" : ""}>
@@ -301,6 +366,25 @@ export function ResultCard({
               ))}
             </div>
           </div>
+
+          {/* Rubric breakdown (collapsible) — NEW */}
+          {rubricSummary && (
+            <CollapsibleSection
+              title={`Rubric Evaluation (${rubricSummary.yesCount} of ${rubricSummary.total} met${
+                rubricSummary.partialCount > 0
+                  ? `, ${rubricSummary.partialCount} partial`
+                  : ""
+              })`}
+              icon={<ListChecks className="h-4 w-4" />}
+              colorClass="text-blue-700"
+            >
+              <div className="space-y-1 divide-y divide-slate-100">
+                {analysis.rubric_results.map((rr) => (
+                  <RubricItem key={rr.id} result={rr} />
+                ))}
+              </div>
+            </CollapsibleSection>
+          )}
 
           {/* Strengths (collapsible) */}
           {analysis.strengths.length > 0 && (
