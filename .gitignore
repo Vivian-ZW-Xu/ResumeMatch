@@ -231,3 +231,7 @@ frontend/node_modules/
 *.log
 .env*.local
 next-env.d.ts
+
+# Allow frontend/lib (path alias target)
+!frontend/lib/
+!frontend/lib/**
