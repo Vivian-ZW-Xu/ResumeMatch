@@ -1,0 +1,33 @@
+Machine Learning Engineer Intern (TikTok-Recommendation) - 2026 Summer
+TikTok
+
+Location: San Jose, CA
+Employment Type: Internship
+Duration: 12 weeks (Summer 2026)
+Compensation: $45/hour
+
+About the Team
+
+TikTok's Recommendation algorithm team plays a central role in driving critical product decisions and platform growth. The team is made up of machine learning researchers and engineers who support and innovate on production recommendation models and drive product impact.
+
+Responsibilities
+
+In this role, you'll have the opportunity to:
+- Drive the development of industry-leading recommendation systems that elevate user experience, strengthen platform safety, and empower a vibrant content ecosystem.
+- Deliver impactful, end-to-end machine learning solutions that tackle high-priority product challenges related to content understanding, LLMs, robustness, and fairness.
+- Own and optimize the full-stack ML pipeline—from algorithm design to system infrastructure—to continuously push the boundaries of recommendation performance.
+- Collaborate with cross-functional teams to craft innovative product strategies and develop intelligent solutions that fuel TikTok's growth in key global markets.
+
+Minimum Qualifications
+
+- Currently pursuing a Master degree with a background in computer science, machine learning, or similar fields
+- Good knowledge of theoretical and empirical research in addressing research problems
+- Solid knowledge and experience with at least one popular deep learning framework (e.g., PyTorch, TensorFlow) and familiarity with deep neural network architectures
+- Able to commit to working for 12 weeks during Summer 2026
+
+Preferred Qualifications
+
+- Research experience in one or more of the following fields: applied machine learning, machine learning infrastructure, large-scale recommendation system, market-facing machine learning product
+- Strong first-author publications record in top AI conferences or journals (e.g., NeurIPS, ICML, ICLR, ACL, EMNLP, NAACL)
+- Proficient in C/C++, Python, and shell programming languages, and have a deep understanding of data structure and algorithm design
+- Internship experience in an AI research organization

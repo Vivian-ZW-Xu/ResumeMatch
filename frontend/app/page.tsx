@@ -23,10 +23,10 @@ import { analyzeUpload, AnalyzeResponse } from "@/lib/api";
 // ============================================================
 
 const SAMPLE_FILES = [
-  "ZhuweiXu_DataScience.pdf",
-  "MLE_ZhuweiXu_Resume.pdf",
+  "ZhuweiXu_DataScientist_Resume.pdf",
+  "ZhuweiXu_MLE_Resume.pdf",
 ];
-const SAMPLE_JD_PATH = "/samples/two-sigma-jd.txt";
+const SAMPLE_JD_PATH = "/samples/tiktok-mle-jd.txt";
 
 async function loadSampleFile(filename: string): Promise<File> {
   const response = await fetch(`/samples/${filename}`);

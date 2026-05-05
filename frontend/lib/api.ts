@@ -96,6 +96,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 const apiClient = axios.create({
   baseURL: API_BASE,
   timeout: 300000, // 5 minutes - LLM can be slow
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 /**
@@ -117,6 +120,7 @@ export async function analyzeUpload(
     {
       headers: {
         "Content-Type": "multipart/form-data",
+        "ngrok-skip-browser-warning": "true",
       },
     }
   );
