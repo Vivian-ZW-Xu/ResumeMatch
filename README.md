@@ -135,6 +135,8 @@ Frontend runs at `http://localhost:3000`.
 
 Open the frontend, upload a resume PDF, paste a JD, click Analyze.
 
+> **Tip**: `export GROQ_API_KEY=...` only persists in the current shell. To avoid re-exporting on every new terminal, append the line to `~/.zshrc` (or `~/.bashrc` on bash) and `source` it once.
+
 ---
 
 ## Project structure
