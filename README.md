@@ -7,6 +7,48 @@
 
 ---
 
+## Recent Updates (May 12, 2026)
+
+**v2 Deployment & Pipeline Upgrade.** The system has been migrated from
+local Ollama (Qwen 2.5 14B) to a fully cloud-hosted setup:
+
+- **Backend**: Now running on **Render** (free tier, 24/7) with
+  **Groq-served Llama 3.3 70B** for inference. End-to-end analysis
+  latency dropped from 1–3 minutes to 6–16 seconds (15–30× speedup).
+- **Frontend**: Continues to be served from **Cloudflare Pages** with
+  the API base URL hard-coded to the Render service.
+- **Sample case**: The "Try with sample data" path is served from a
+  pre-computed JSON file and renders in under 2 seconds, independent
+  of backend availability.
+
+**Pipeline Improvements.** Beyond the infrastructure migration, the
+matching pipeline was refined through six iterations documented in
+the report. Highlights:
+
+- **Compound splitting**: Hard requirements written as conjunctions
+  in the JD are now split into atomic rubric items.
+- **Duty-to-experience proxy**: Technical-core responsibilities are
+  transformed into past-experience rubric items, so the rubric
+  captures the JD's strongest signals (not just the qualifications
+  section).
+- **Post-hoc rubric self-audit**: A second LLM pass audits the
+  generated rubric for four common failure modes
+  (`NICE_TO_HAVE_AS_HARD`, `JOB_DUTY_AS_REQUIREMENT`,
+  `UNREASONABLE_THRESHOLD`, `NOT_IN_JD`) and removes or demotes
+  problematic items.
+
+**Honest limitations.** Rubric quality is JD-style sensitive. On JDs
+where the candidate's resume variants differ along the JD's axes
+(e.g., TikTok recsys JD with MLE vs DataScientist resumes), the system
+produces strongly differentiating output (13-point spread). On JDs
+where neither resume variant has the depth signals the JD demands
+(e.g., ByteDance ML-infra JD asking for LLM fine-tuning / ModelOps /
+GPU orchestration), the system honestly returns a small spread —
+which is correct behavior, not a failure. See `ResumeMatch_Report_v2.pdf`
+for the full discussion.
+
+---
+
 ## What it does
 
 Job descriptions are long. ResumeMatch turns a JD into a structured, evidence-backed answer to the question every applicant actually has: *Does my resume fit this role, and where are the gaps?*
@@ -53,7 +95,7 @@ PDF Parser → JD Extractor → Rubric Generator → Per-Resume Matcher
 - **JD extraction**: LLM produces a structured JSON summary + a custom evaluation rubric tailored to the specific JD
 - **Per-resume matching**: For each rubric criterion, the LLM returns `yes / partial / no` with cited evidence
 - **Scoring**: Deterministic in Python (verdicts → weighted scores per dimension), so identical inputs always produce identical scores
-- **All LLM calls run locally** via Ollama (Qwen 2.5 14B). No API keys, no data leaving your machine.
+- **LLM inference** runs on **Groq-served Llama 3.3 70B**. Each `analyze()` call issues 4 LLM calls (JD parse, rubric self-audit, JD summary, per-resume rubric eval) and finishes end-to-end in 6–16 seconds.
 
 Full design discussion in the [report](./ResumeMatch_Report.md).
 
@@ -63,52 +105,34 @@ Full design discussion in the [report](./ResumeMatch_Report.md).
 
 ### Prerequisites
 
-- macOS or Linux (tested on Apple Silicon)
-- ~9 GB free disk for the LLM
-- 16 GB+ RAM
+- macOS, Linux, or Windows (WSL)
 - Python 3.11
 - Node.js 20+
+- A Groq API key (free tier works) — get one at [console.groq.com/keys](https://console.groq.com/keys)
 
-### Step 1 — Install Ollama and pull the model
-
-```bash
-brew install ollama
-brew services start ollama
-ollama pull qwen2.5:14b
-```
-
-Verify the model is available:
+### Setup
 
 ```bash
-ollama list
-# should show qwen2.5:14b
-```
+# 1. Get a Groq API key from https://console.groq.com
+export GROQ_API_KEY=gsk_...
 
-### Step 2 — Backend
-
-```bash
+# 2. Backend
 cd backend
 conda create -n resume-match python=3.11 -y
 conda activate resume-match
 pip install -r requirements.txt
-uvicorn app.main:app --port 8000
-```
+uvicorn app.main:app --reload --port 8000
 
-Backend runs at `http://localhost:8000`. Swagger docs at `http://localhost:8000/docs`.
-
-### Step 3 — Frontend
-
-In a new terminal:
-
-```bash
+# 3. Frontend (separate terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Backend runs at `http://localhost:8000` (Swagger docs at `/docs`).
+Frontend runs at `http://localhost:3000`.
 
-That's it — upload your resume, paste a JD, click Analyze.
+Open the frontend, upload a resume PDF, paste a JD, click Analyze.
 
 ---
 
@@ -139,20 +163,22 @@ ResumeMatch/
 
 | Layer | Tech |
 |---|---|
-| LLM | Qwen 2.5 14B (Q4) via local Ollama |
+| LLM | Llama 3.3 70B (via Groq API) |
 | Backend | FastAPI + Pydantic + pdfplumber |
 | Frontend | Next.js 15 + TypeScript + Tailwind + shadcn/ui |
 | Visualization | Recharts (radar charts) |
-| Hosting | Cloudflare Pages (frontend, static export) |
+| Frontend hosting | Cloudflare Pages (static export) |
+| Backend hosting | Render (free tier) |
 
 ---
 
 ## Limitations
 
-- Analysis takes 1–3 minutes per resume on M4 Max — the model is local, not API-backed
-- The frontend is permanently online but the backend runs locally; the live deployed demo serves a cached response for the sample case so it works without the backend running
-- LLM occasionally generates rubric items that conflate nice-to-haves with hard requirements (mitigated by prompt design but not eliminated)
-- English-only
+- End-to-end analysis takes 6–16 seconds via Groq (vs. 1–3 min on the local-Ollama v1 setup). Render's free tier cold-starts add 30–60 seconds after 15 min of idle.
+- Groq free tier has a daily token limit (~100k tokens/day). Heavy traffic can hit it; the sample case is served from a cached JSON so it stays available regardless.
+- LLM occasionally generates rubric items that conflate nice-to-haves with hard requirements (mitigated by the post-hoc rubric self-audit but not eliminated).
+- Rubric quality is sensitive to JD phrasing — JDs that bury technical signals in non-`Responsibilities` prose can produce shallower rubrics.
+- English-only.
 
 See the [report](./ResumeMatch_Report.md) for the full discussion + future work.
 
