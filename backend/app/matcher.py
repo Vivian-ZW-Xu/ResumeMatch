@@ -110,20 +110,28 @@ Return a JSON object:
 RUBRIC RULES (most important):
 - Build rubric items from HARD REQUIREMENTS. Cover EVERY hard requirement. \
 If a hard requirement is compound (e.g. "X and Y"), split it into separate atomic items.
-- ALSO add PAST-EXPERIENCE PROXY items for the JD's CORE TECHNICAL DUTIES \
-(see "DUTY → PAST-EXPERIENCE PROXY" below). These are the items that distinguish a \
-candidate who is generically qualified from one who has actually built what this role does.
-- OPTIONALLY add 1-2 HIGH-SIGNAL NICE-TO-HAVE items at LOW WEIGHT (2-3). Use this \
-when the JD prominently emphasizes a preferred qualification that meaningfully \
-differentiates top candidates — e.g. "Strong first-author publications at top venues" \
-for an ML/research role, "Open-source contributions" for a platform role. Skip generic \
-nice-to-haves (extra programming languages, particular tools). Low weight keeps them \
-from overshadowing hard requirements.
-- ONLY if the above don't already cover the JD's emphasis, add 1-2 DEPTH \
-items (see "DEPTH ITEMS MUST REFLECT JD'S EMPHASIS" below). Do NOT add a research-flavored \
-depth item just because the JD mentions "research" once — duty proxies should be the \
-primary signal for what the role does.
-- 6 to 9 rubric items total.
+- MANDATORY: also add 2-4 PAST-EXPERIENCE PROXY items derived from the JD's CORE \
+TECHNICAL DUTIES (see "DUTY → PAST-EXPERIENCE PROXY" below). These are the items that \
+distinguish a candidate who is generically qualified from one who has actually built \
+what this role does. THE RUBRIC IS INCOMPLETE WITHOUT THEM. Read the JD's \
+Responsibilities / About-the-team / Intro paragraphs in full — concrete technical work \
+described there must be turned into proxy items, even if not under a header literally \
+named "Responsibilities".
+- MANDATORY: if the JD's Preferred / Nice-to-have section names SPECIFIC TECHNOLOGIES \
+or research areas (e.g. "LLM finetuning", "ModelOps", "alignment", "vector databases", \
+"distributed training", named conferences, named frameworks), add 1-2 corresponding \
+rubric items at LOW WEIGHT (2-3). Specific-tech mentions in Preferred are how the JD \
+signals what differentiates top candidates from baseline-qualified ones — \
+SKIPPING THEM defeats the purpose of the rubric.
+  Skip generic nice-to-haves only when they aren't tied to a concrete technology \
+(e.g. "good communication skills", "self-starter mindset" → SKIP).
+- ONLY if the above don't already cover the JD's emphasis, add 1 generic DEPTH item \
+(see "DEPTH ITEMS MUST REFLECT JD'S EMPHASIS" below). Do NOT add a research-flavored \
+depth item just because the JD mentions "research" once — duty proxies are the primary \
+signal for what the role does.
+- Rubric MUST contain 7 to 9 items total. If after the steps above you have fewer than \
+7, your coverage of duties or specific-tech Preferred items is too thin — go back and \
+extract more proxy / nice-to-have items.
 - Each criterion must be ATOMIC (one yes/no question, not compound).
 - Each criterion must be VERIFIABLE from a resume (a recruiter can decide yes/no).
 
@@ -143,25 +151,40 @@ OTHER CONSTRAINTS:
 - Use simple ids: "r1", "r2", "r3"... (no brackets, no special chars).
 
 DUTY → PAST-EXPERIENCE PROXY — VERY IMPORTANT:
-The JD's "Responsibilities" / "What you'll do" sections describe what the role WILL do \
-on the job. By themselves these are not prerequisites. BUT for any duty whose core is a \
-CONCRETE TECHNICAL ACTIVITY, the rubric MUST include a corresponding item that asks \
-whether the candidate has PAST EXPERIENCE doing that technical work. This is how the \
-rubric distinguishes ready candidates from ones who merely meet bare minimum qualifications.
 
-Transformation pattern: extract the technical noun from the duty, then ask \
-"Has past experience [building / deploying / working on] <technical noun>?"
+SCAN THE FULL JD, NOT JUST A "RESPONSIBILITIES" HEADER:
+Technical duty descriptions can appear in ANY of these places — read them all:
+  - Sections literally headed "Responsibilities", "What you'll do", "You will...".
+  - Intro / "About the team" paragraphs ("our team builds X", "the team operates Y").
+  - "About this role" prose that describes day-to-day technical work.
+Do NOT skip a section just because it lacks the header "Responsibilities". \
+A team-description paragraph that says "we develop and operate massively distributed \
+ML training and inference systems" is a duty source.
 
-GOOD transformations (technical core → proxy):
+TRANSFORMATION RULE:
+For any duty whose core is a CONCRETE TECHNICAL ACTIVITY, the rubric MUST include a \
+corresponding item that asks whether the candidate has PAST EXPERIENCE doing that work. \
+Pattern: extract the technical noun, then ask \
+"Has past experience [building / deploying / working on / optimizing] <technical noun>?"
+
+COMPOUND DUTIES → MULTIPLE PROXY ITEMS:
+A single duty sentence can pack 3-5 distinct technical activities. Each activity that \
+maps to a verifiable resume artifact becomes ITS OWN rubric item. Do not roll them up.
+
+GOOD transformations:
 - Duty: "Drive the development of industry-leading recommendation systems"
   → Rubric: "Has past experience building ranking, retrieval, or recommendation systems?"
 - Duty: "Own and optimize the full-stack ML pipeline—from algorithm design to system infrastructure"
   → Rubric: "Has past experience building or owning end-to-end production ML pipelines?"
-- Duty: "Deliver end-to-end ML solutions for content understanding, LLMs, robustness, fairness"
-  → Rubric: "Has past experience shipping ML solutions in content understanding, LLMs, \
-robustness, or fairness?"
-- Duty: "Design and analyze A/B experiments to drive growth"
-  → Rubric: "Has past experience designing and analyzing A/B experiments?"
+- Duty: "Develop and maintain a big model as a service platform, including \
+offline training/finetuning, online inference, model management, and resource orchestration"
+  → Rubric (FOUR items from this one duty):
+    - "Has past experience finetuning large language models (LoRA, QLoRA, full finetune)?"
+    - "Has past experience deploying ML inference / model-serving systems?"
+    - "Has experience with ModelOps / model lifecycle management workflows?"
+    - "Has experience with compute resource orchestration (GPU scheduling, cluster mgmt)?"
+- Duty (from team intro): "develop and operate massively distributed ML training and inference systems"
+  → Rubric: "Has past experience working on large-scale distributed ML training or inference systems?"
 
 DO NOT transform ABSTRACT activities into rubric items. SKIP these:
 - "Collaborate with cross-functional teams" → every candidate "collaborates"; SKIP.
@@ -266,8 +289,23 @@ Examples: requiring first-author NeurIPS/ICML/ICLR publications for an intern ro
 requiring 10+ years of experience for a new-grad position; requiring a PhD when the JD \
 says "Bachelor's or Master's"; requiring open-source maintainer status for a junior role.
 
-4. NOT_IN_JD: The criterion introduces a requirement that does not appear anywhere in \
-the JD. The LLM hallucinated it.
+4. NOT_IN_JD: The criterion introduces a technical area that is NOT mentioned ANYWHERE \
+in the JD body — neither in the Qualifications/Requirements section, nor in the \
+Responsibilities/duties, nor in the team-intro / "About this role" paragraphs. The LLM \
+hallucinated it.
+
+   IMPORTANT — DO NOT flag duty-derived proxies as NOT_IN_JD:
+   A rubric item phrased as "Has past experience [X]" where [X] is derived from a duty / \
+responsibility / team-description that DOES appear in the JD body is LEGITIMATE. The \
+proxy form is a transformation, not a fabrication. Example: a JD whose duties section \
+says "develop the platform, including offline finetuning, online inference, model \
+management" supports ALL THREE of these proxies as in-JD:
+     - "Has past experience finetuning LLMs?" → KEEP (finetuning is in the duties).
+     - "Has past experience deploying ML inference systems?" → KEEP (online inference is in the duties).
+     - "Has experience with model lifecycle / ModelOps?" → KEEP (model management is in the duties).
+   Only flag NOT_IN_JD when the rubric names a technical area with ZERO presence \
+anywhere in the JD body (e.g., "Has experience with Kubernetes?" for a JD that nowhere \
+mentions Kubernetes or container orchestration).
 
 For each rubric item, return ONE of these verdicts:
 
