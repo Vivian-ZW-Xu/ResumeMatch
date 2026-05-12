@@ -91,14 +91,19 @@ export interface AnalyzeResponse {
 // API client
 // ============================================================
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+// Resolution order:
+//   1. NEXT_PUBLIC_API_BASE env var (override for staging / alt backends)
+//   2. https://resumematch-backend-icqh.onrender.com in production builds
+//   3. http://localhost:8000 in dev
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE ||
+  (process.env.NODE_ENV === "production"
+    ? "https://resumematch-backend-icqh.onrender.com"
+    : "http://localhost:8000");
 
 const apiClient = axios.create({
   baseURL: API_BASE,
-  timeout: 300000, // 5 minutes - LLM can be slow
-  headers: {
-    "ngrok-skip-browser-warning": "true",
-  },
+  timeout: 300000, // 5 minutes - LLM can be slow + Render free tier cold start adds ~30-60s
 });
 
 /**
@@ -120,7 +125,6 @@ export async function analyzeUpload(
     {
       headers: {
         "Content-Type": "multipart/form-data",
-        "ngrok-skip-browser-warning": "true",
       },
     }
   );
