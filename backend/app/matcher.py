@@ -31,18 +31,35 @@ and produce an evaluation rubric.
 
 CLASSIFICATION RULES:
 
-- HARD REQUIREMENT: a must-have qualification listed under "Requirements", \
-"Qualifications", "You should possess", or similar header. \
-If the JD has a bulleted list under "Requirements", EVERY item in that list is hard, \
-even if individual items contain words like "preferred" or "or". \
-Example: "Familiarity with cloud platforms (AWS preferred)" — the hard requirement is \
-"familiarity with cloud platforms"; AWS being preferred is just a sub-preference within it. \
-Example: "Experience with Django or Flask" — hard requirement is "experience with Django or Flask"; \
-the candidate needs at least one of them.
+- HARD REQUIREMENT: a must-have qualification. Typically appears under "Requirements", \
+"Qualifications", "You should possess", or a similar header — but section header alone is \
+not decisive; the language of the individual item matters (see NICE-TO-HAVE rule (b)).
 
-- NICE-TO-HAVE: only items marked as optional AT THE TOP LEVEL. Phrases: \
-"the following is a plus:", "ideal candidate would also have:", \
-items prefixed with "Bonus:" or "Nice to have:".
+  Sub-clause preferences DO NOT make the whole item nice-to-have:
+  Example: "Familiarity with cloud platforms (AWS preferred)" → HARD = "familiarity with cloud platforms"; \
+  AWS being preferred is just a sub-preference within it.
+  Example: "Experience with Django or Flask" → HARD = "experience with Django or Flask"; \
+  candidate needs at least one of them.
+
+  COMPOUND BULLETS — preserve every atomic clause:
+  A single bullet may pack multiple atomic requirements joined by "and". \
+SPLIT them into separate hard_requirements entries. Do NOT drop a clause.
+  Example: "Knowledge of PyTorch and familiarity with DNN architectures" → \
+two entries: "Knowledge of PyTorch", "Familiarity with DNN architectures".
+  Example: "Bachelor's in CS and 3+ years of experience" → \
+two entries: "Bachelor's in CS", "3+ years of experience".
+
+- NICE-TO-HAVE: an item the JD marks as optional. Two patterns:
+  (a) Top-level section markers: "the following is a plus:", "ideal candidate would also have:", \
+  bullets prefixed with "Bonus:" or "Nice to have:".
+  (b) An item — even one that appears INSIDE a Requirements list — whose ENTIRE statement is \
+  qualified with optionality language. Examples: "Familiarity with Kubernetes is a plus", \
+  "Experience with X preferred", "Candidates with Y are encouraged to apply", \
+  "Knowledge of Z is a bonus".
+
+  Key test: is the WHOLE item qualified, or just a sub-clause?
+  - "Cloud platforms (AWS preferred)" → whole item is "cloud platforms" (HARD); only AWS is preferred.
+  - "AWS experience is a plus" → the whole item is qualified (NICE-TO-HAVE).
 
 - JOB DUTY: what the role does on the job. NOT a prerequisite. \
 Phrases: "you will...", "responsibilities include...", "partner with...", "conduct...".
@@ -50,8 +67,12 @@ Phrases: "you will...", "responsibilities include...", "partner with...", "condu
 - NOT REQUIRED: things the JD explicitly says are NOT needed. \
 Phrases: "you don't need X", "more than half come from outside X".
 
-When in doubt between hard requirement and nice-to-have, classify as HARD requirement. \
-Items in a "Requirements" list are ALWAYS hard, even with sub-clauses like "X preferred"."""
+LITMUS TEST when uncertain between HARD and NICE-TO-HAVE:
+Ask: "Would a candidate likely be filtered out at resume screening for missing this?"
+- Yes / probably yes → HARD requirement.
+- Maybe / would still be considered → NICE-TO-HAVE.
+Do NOT default to HARD just because the item sits inside a Requirements section — read the \
+item's own language first."""
 
 
 JD_PARSE_PROMPT_TEMPLATE = """Parse this job description into structured requirements.
@@ -87,10 +108,22 @@ Return a JSON object:
 }}
 
 RUBRIC RULES (most important):
-- Build rubric items from HARD REQUIREMENTS. Cover EVERY hard requirement.
-- THEN add 2-3 DEPTH-DIFFERENTIATION items, BUT THESE MUST REFLECT THE JD'S CORE EMPHASIS \
-(see "DEPTH ITEMS MUST REFLECT JD'S EMPHASIS" below).
-- 6 to 9 rubric items total. Mix of threshold items (hard requirements) and depth items.
+- Build rubric items from HARD REQUIREMENTS. Cover EVERY hard requirement. \
+If a hard requirement is compound (e.g. "X and Y"), split it into separate atomic items.
+- ALSO add PAST-EXPERIENCE PROXY items for the JD's CORE TECHNICAL DUTIES \
+(see "DUTY → PAST-EXPERIENCE PROXY" below). These are the items that distinguish a \
+candidate who is generically qualified from one who has actually built what this role does.
+- OPTIONALLY add 1-2 HIGH-SIGNAL NICE-TO-HAVE items at LOW WEIGHT (2-3). Use this \
+when the JD prominently emphasizes a preferred qualification that meaningfully \
+differentiates top candidates — e.g. "Strong first-author publications at top venues" \
+for an ML/research role, "Open-source contributions" for a platform role. Skip generic \
+nice-to-haves (extra programming languages, particular tools). Low weight keeps them \
+from overshadowing hard requirements.
+- ONLY if the above don't already cover the JD's emphasis, add 1-2 DEPTH \
+items (see "DEPTH ITEMS MUST REFLECT JD'S EMPHASIS" below). Do NOT add a research-flavored \
+depth item just because the JD mentions "research" once — duty proxies should be the \
+primary signal for what the role does.
+- 6 to 9 rubric items total.
 - Each criterion must be ATOMIC (one yes/no question, not compound).
 - Each criterion must be VERIFIABLE from a resume (a recruiter can decide yes/no).
 
@@ -108,6 +141,36 @@ WEIGHT GUIDE:
 
 OTHER CONSTRAINTS:
 - Use simple ids: "r1", "r2", "r3"... (no brackets, no special chars).
+
+DUTY → PAST-EXPERIENCE PROXY — VERY IMPORTANT:
+The JD's "Responsibilities" / "What you'll do" sections describe what the role WILL do \
+on the job. By themselves these are not prerequisites. BUT for any duty whose core is a \
+CONCRETE TECHNICAL ACTIVITY, the rubric MUST include a corresponding item that asks \
+whether the candidate has PAST EXPERIENCE doing that technical work. This is how the \
+rubric distinguishes ready candidates from ones who merely meet bare minimum qualifications.
+
+Transformation pattern: extract the technical noun from the duty, then ask \
+"Has past experience [building / deploying / working on] <technical noun>?"
+
+GOOD transformations (technical core → proxy):
+- Duty: "Drive the development of industry-leading recommendation systems"
+  → Rubric: "Has past experience building ranking, retrieval, or recommendation systems?"
+- Duty: "Own and optimize the full-stack ML pipeline—from algorithm design to system infrastructure"
+  → Rubric: "Has past experience building or owning end-to-end production ML pipelines?"
+- Duty: "Deliver end-to-end ML solutions for content understanding, LLMs, robustness, fairness"
+  → Rubric: "Has past experience shipping ML solutions in content understanding, LLMs, \
+robustness, or fairness?"
+- Duty: "Design and analyze A/B experiments to drive growth"
+  → Rubric: "Has past experience designing and analyzing A/B experiments?"
+
+DO NOT transform ABSTRACT activities into rubric items. SKIP these:
+- "Collaborate with cross-functional teams" → every candidate "collaborates"; SKIP.
+- "Partner with stakeholders" → too vague; SKIP.
+- "Communicate findings" → SKIP unless the role's central function is communication (rare).
+
+A duty qualifies for proxy transformation only if its core is something a candidate \
+could concretely LIST on a resume — a system they built, a model they deployed, a \
+pipeline they shipped, an experiment they designed.
 
 DEPTH ITEMS MUST REFLECT JD'S EMPHASIS — VERY IMPORTANT:
 Before writing depth items, identify what the JD ACTUALLY values. Read the language carefully.
@@ -155,6 +218,116 @@ real-world data analysis (e.g. "Backtested predictive factors across 10 years of
 "Analyzed 50M user records") from methodology / framework / synthetic-data projects \
 (e.g. "Built generator-verifier-ranker framework on GSM8K benchmark"). \
 The latter should be "partial" or "no" for this criterion, NOT "yes".
+
+Return ONLY the JSON object."""
+
+
+# ============================================================
+# Prompts — Rubric self-critique (post-hoc verification)
+# ============================================================
+
+RUBRIC_VERIFY_SYSTEM_PROMPT = """You are a rubric quality auditor. \
+You review an evaluation rubric generated from a job description and flag rubric items \
+with quality issues, so they can be removed or down-weighted before scoring resumes.
+
+YOU MUST CHECK FOR THESE 4 ISSUE TYPES:
+
+1. NICE_TO_HAVE_AS_HARD: The criterion measures something the JD marks as preferred / \
+plus / bonus / nice-to-have (either via a top-level section like "Bonus:" or an item-level \
+qualifier like "X is a plus", "Y preferred", "Z is a bonus"), AND the rubric gives it a \
+weight ≥ 4 (treating it like a normal threshold check). \
+If the item is already at weight ≤ 3, it is correctly down-weighted — leave it alone (keep).
+
+2. JOB_DUTY_AS_REQUIREMENT: The criterion treats an ABSTRACT job duty — \
+something like "collaboration", "communication", "partnering with stakeholders", \
+"working on a team" — as a past-experience requirement. These activities are too \
+generic to verify on a resume; every candidate will claim them.
+
+   IMPORTANT EXCEPTION — KEEP technical-core proxies:
+   A rubric item that asks about past experience doing the CONCRETE TECHNICAL CORE of \
+a job duty is LEGITIMATE and should be KEPT. The rubric uses such proxies to measure \
+whether a candidate has actually done the technical work the role requires.
+
+   Distinguish (flag) ABSTRACT from (keep) TECHNICAL-CORE:
+   - "Has experience collaborating with cross-functional teams?" → flag (abstract, every CV claims this).
+   - "Has experience building recommendation / ranking / retrieval systems?" → KEEP (concrete technical core).
+   - "Has experience communicating findings to stakeholders?" → flag (abstract).
+   - "Has experience deploying production ML pipelines?" → KEEP (concrete).
+   - "Has experience designing and analyzing A/B experiments?" → KEEP (concrete).
+   - "Has experience partnering with product managers?" → flag (abstract).
+
+   Rule: if the item names a CONCRETE TECHNICAL ARTIFACT (system, pipeline, model, \
+experiment, dataset, framework) that maps to something a candidate could list on a \
+resume, KEEP it. If the item names an INTERPERSONAL or PROCESS verb (collaborate, \
+partner, communicate, coordinate), flag it.
+
+3. UNREASONABLE_THRESHOLD: The criterion sets a bar inappropriate for the role level. \
+Examples: requiring first-author NeurIPS/ICML/ICLR publications for an intern role; \
+requiring 10+ years of experience for a new-grad position; requiring a PhD when the JD \
+says "Bachelor's or Master's"; requiring open-source maintainer status for a junior role.
+
+4. NOT_IN_JD: The criterion introduces a requirement that does not appear anywhere in \
+the JD. The LLM hallucinated it.
+
+For each rubric item, return ONE of these verdicts:
+
+- "keep": item is well-grounded in the JD and appropriate for the role level. \
+This is the DEFAULT — only flag an issue if you can clearly cite which test it fails.
+
+- "demote_to_lowweight": item has an issue but is still tangentially relevant. \
+The weight will be set to a low value (2). Use this for nice-to-haves that should \
+slightly differentiate strong candidates, and for borderline-unreasonable thresholds \
+that still capture something useful.
+
+- "remove": item is fundamentally flawed (NOT_IN_JD, or a JOB_DUTY incorrectly framed \
+as past experience, or a clearly unreasonable threshold).
+
+BE CONSERVATIVE: when uncertain, keep the item. Removing a valid criterion is worse \
+than keeping a slightly imperfect one. Flag at most 2-3 items per rubric in most cases."""
+
+
+RUBRIC_VERIFY_PROMPT_TEMPLATE = """Audit this evaluation rubric for quality issues.
+
+=== JOB DESCRIPTION ===
+{jd}
+
+=== JD STRUCTURE (already extracted by upstream step) ===
+Hard requirements:
+{hard_requirements}
+
+Nice-to-haves (items the JD marks as preferred/plus/bonus):
+{nice_to_haves}
+
+Job duties (things the candidate WILL DO on the job — NOT prerequisites):
+{job_duties}
+
+Explicitly NOT required:
+{not_required}
+
+=== RUBRIC TO AUDIT ===
+{rubric}
+
+=== TASK ===
+For each rubric item above, decide whether to keep, demote, or remove it.
+
+Return a JSON object:
+
+{{
+  "audits": [
+    {{
+      "id": "<rubric item id, exactly as given, e.g. 'r1'>",
+      "verdict": "keep | demote_to_lowweight | remove",
+      "issue_type": "NICE_TO_HAVE_AS_HARD | JOB_DUTY_AS_REQUIREMENT | UNREASONABLE_THRESHOLD | NOT_IN_JD | null",
+      "reasoning": "<one short sentence citing specific JD text or rubric flaw>"
+    }}
+  ]
+}}
+
+RULES:
+- One entry per rubric item, in the same order, with the same ids.
+- If verdict is "keep", set issue_type to null.
+- Reasoning must be SPECIFIC — quote or paraphrase the JD when flagging an issue.
+- Default to "keep" if you cannot clearly cite which of the 4 tests the item fails.
 
 Return ONLY the JSON object."""
 
@@ -424,6 +597,7 @@ def extract_jd_requirements(jd: str) -> Optional[JDRequirements]:
     """
     Parse a JD into structured requirements + evaluation rubric.
     This is called ONCE per analyze() and shared across all resumes.
+    Runs a post-hoc rubric audit (LLM self-critique) before returning.
     """
     client = get_llm_client()
     prompt = JD_PARSE_PROMPT_TEMPLATE.format(jd=jd.strip())
@@ -435,16 +609,101 @@ def extract_jd_requirements(jd: str) -> Optional[JDRequirements]:
             temperature=0.1,
         )
         rubric_items = [RubricItem(**r) for r in raw.get("evaluation_rubric", [])]
+        hard = raw.get("hard_requirements", [])
+        nice = raw.get("nice_to_haves", [])
+        duties = raw.get("job_duties", [])
+        not_req = raw.get("not_required", [])
+
+        rubric_items = verify_rubric(rubric_items, jd, hard, nice, duties, not_req)
+
         return JDRequirements(
-            hard_requirements=raw.get("hard_requirements", []),
-            nice_to_haves=raw.get("nice_to_haves", []),
-            job_duties=raw.get("job_duties", []),
-            not_required=raw.get("not_required", []),
+            hard_requirements=hard,
+            nice_to_haves=nice,
+            job_duties=duties,
+            not_required=not_req,
             evaluation_rubric=rubric_items,
         )
     except Exception as e:
         print(f"JD requirements parsing failed: {e}")
         return None
+
+
+# Weight applied when the auditor demotes a rubric item.
+# Low enough to barely affect scores, high enough to still differentiate
+# between candidates if everything else ties.
+_DEMOTED_WEIGHT = 2
+
+
+def verify_rubric(
+    rubric: List[RubricItem],
+    jd: str,
+    hard_reqs: List[str],
+    nice: List[str],
+    duties: List[str],
+    not_req: List[str],
+) -> List[RubricItem]:
+    """
+    Post-hoc rubric audit. Asks the LLM to flag rubric items that:
+      - reflect nice-to-haves rather than hard requirements,
+      - confuse JD job duties with past-experience requirements,
+      - set unreasonable thresholds for the role level,
+      - introduce requirements not in the JD.
+
+    Returns a possibly-modified rubric:
+      - "keep"     → unchanged
+      - "demote_to_lowweight" → weight reset to _DEMOTED_WEIGHT
+      - "remove"   → dropped from the rubric
+
+    Fail-open: if the audit call errors, returns the input rubric unchanged
+    rather than blocking analysis.
+    """
+    if not rubric:
+        return rubric
+
+    client = get_llm_client()
+    prompt = RUBRIC_VERIFY_PROMPT_TEMPLATE.format(
+        jd=jd.strip(),
+        hard_requirements=_format_list(hard_reqs),
+        nice_to_haves=_format_list(nice),
+        job_duties=_format_list(duties),
+        not_required=_format_list(not_req),
+        rubric=_format_rubric_for_prompt(rubric),
+    )
+
+    try:
+        raw = client.chat_json(
+            prompt=prompt,
+            system=RUBRIC_VERIFY_SYSTEM_PROMPT,
+            temperature=0.1,
+        )
+    except Exception as e:
+        print(f"Rubric audit failed (keeping original rubric): {e}")
+        return rubric
+
+    audits = {a.get("id"): a for a in raw.get("audits", []) if a.get("id")}
+
+    verified: List[RubricItem] = []
+    for item in rubric:
+        audit = audits.get(item.id)
+        if not audit:
+            verified.append(item)
+            continue
+        verdict = audit.get("verdict", "keep")
+        issue = audit.get("issue_type")
+        reason = audit.get("reasoning", "")
+        if verdict == "remove":
+            print(f"  [rubric audit] REMOVE {item.id} ({issue}): {reason}")
+            continue
+        if verdict == "demote_to_lowweight":
+            print(
+                f"  [rubric audit] DEMOTE {item.id} "
+                f"(w={item.weight}→{_DEMOTED_WEIGHT}, {issue}): {reason}"
+            )
+            verified.append(item.model_copy(update={"weight": _DEMOTED_WEIGHT}))
+            continue
+        verified.append(item)
+
+    return verified
 
 
 def extract_jd_summary(jd: str) -> dict:

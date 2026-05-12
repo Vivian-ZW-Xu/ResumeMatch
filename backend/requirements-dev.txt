@@ -1,0 +1,26 @@
+# Development & experiments dependencies (NOT deployed).
+# Install on top of requirements.txt:
+#   pip install -r requirements.txt -r requirements-dev.txt
+#
+# These were used in experiments/notebooks/ for the original NYU Text as Data
+# project — comparing LLM matching against traditional NLP baselines.
+
+# HTTP
+httpx==0.27.2
+
+# Traditional NLP baselines
+scikit-learn==1.6.0
+numpy==2.2.0
+pandas==2.2.3
+
+# Embedding-based baselines
+sentence-transformers==3.3.1
+torch==2.5.1
+
+# NER baseline
+spacy==3.8.3
+
+# Notebook / dev tooling
+pytest==8.3.4
+ipython==8.30.0
+jupyter==1.1.1

@@ -1,22 +1,32 @@
 """
-LLM client for Qwen2.5-14B via Ollama.
+LLM client for Llama 3.3 70B Versatile via Groq API.
 Handles prompt construction and structured JSON output parsing.
 """
 import json
+import os
 import re
 from typing import Optional
 
-import ollama
+from groq import Groq
 
 
-MODEL_NAME = "qwen2.5:14b"
+MODEL_NAME = "llama-3.3-70b-versatile"
 
 
 class LLMClient:
-    """Wrapper around Ollama's Qwen2.5-14B."""
+    """Wrapper around Groq's Llama 3.3 70B Versatile."""
 
     def __init__(self, model: str = MODEL_NAME):
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "GROQ_API_KEY is not set. "
+                "Get a key at https://console.groq.com/keys and export it: "
+                "`export GROQ_API_KEY=<your-key>` (locally) or set it in the "
+                "Render dashboard (production)."
+            )
         self.model = model
+        self.client = Groq(api_key=api_key)
 
     def chat(
         self,
@@ -32,7 +42,7 @@ class LLMClient:
             prompt: User message.
             system: Optional system prompt.
             temperature: Sampling temperature (0.0-1.0). Lower = more deterministic.
-            json_mode: If True, request JSON output (Ollama's format='json').
+            json_mode: If True, request JSON output (Groq's response_format=json_object).
 
         Returns:
             The LLM's response as a string.
@@ -45,13 +55,13 @@ class LLMClient:
         kwargs = {
             "model": self.model,
             "messages": messages,
-            "options": {"temperature": temperature},
+            "temperature": temperature,
         }
         if json_mode:
-            kwargs["format"] = "json"
+            kwargs["response_format"] = {"type": "json_object"}
 
-        response = ollama.chat(**kwargs)
-        return response["message"]["content"]
+        response = self.client.chat.completions.create(**kwargs)
+        return response.choices[0].message.content
 
     def chat_json(
         self,
@@ -62,7 +72,7 @@ class LLMClient:
         """
         Send a prompt and parse the response as JSON.
 
-        Uses Ollama's native JSON mode for reliability.
+        Uses Groq's native JSON mode for reliability.
         Falls back to regex extraction if direct parsing fails.
 
         Returns:
