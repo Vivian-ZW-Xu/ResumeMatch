@@ -3,7 +3,7 @@
 > **Find which version of your resume best matches a job description — in seconds.**
 
 🌐 **Live demo**: [resumematch.pages.dev](https://resumematch.pages.dev)
-📄 **Report**: [ResumeMatch_Report.md](./ResumeMatch_Report.md)
+📄 **Report**: [ResumeMatch_Report.pdf](./ResumeMatch_Report.pdf)
 
 ---
 
@@ -44,7 +44,7 @@ produces strongly differentiating output (13-point spread). On JDs
 where neither resume variant has the depth signals the JD demands
 (e.g., ByteDance ML-infra JD asking for LLM fine-tuning / ModelOps /
 GPU orchestration), the system honestly returns a small spread —
-which is correct behavior, not a failure. See `ResumeMatch_Report_v2.pdf`
+which is correct behavior, not a failure. See [ResumeMatch_Report.pdf](./ResumeMatch_Report.pdf)
 for the full discussion.
 
 ---
@@ -61,7 +61,7 @@ Two ways to use it:
 For each resume the system produces:
 
 - An overall match score (0–100) and dimension scores across **Skills / Experience / Education / Industry**
-- A custom rubric (6–9 criteria) generated specifically for the JD, with `yes / partial / no` verdicts and evidence excerpts
+- A custom rubric (7–9 criteria) generated specifically for the JD, with `yes / partial / no` verdicts and evidence excerpts, plus a post-hoc self-audit pass that prunes flawed items
 - **Strengths** — each linked to a JD requirement and a resume passage that satisfies it
 - **Gaps** — each linked to a JD requirement, with on-demand suggestions and bullet rewrites
 - A **Best Version** recommendation when multiple resumes are compared
@@ -77,27 +77,28 @@ For each resume the system produces:
 
 The sample case runs entirely client-side and is always available. No setup, no signup.
 
-> **Note**: Custom resume uploads (your own PDFs) require the local backend to be running. See setup below.
+> **Note**: Custom resume uploads (your own PDFs) hit the live Render-hosted backend, so they work without any local setup. The first upload after 15 min of idle may take 30–60 s while Render's free-tier instance cold-starts; subsequent calls are fast (6–16 s).
 
 ---
 
 ## How it works (high level)
 
 ```
-PDF Parser → JD Extractor → Rubric Generator → Per-Resume Matcher
-                                                       ↓
-                                          Deterministic Scoring → Ranking
-                                                       ↓
-                                          Comparison & Suggestions
+PDF Parser → JD Extractor → Rubric Generator → Rubric Self-Audit → Per-Resume Matcher
+                                                                          ↓
+                                                       Deterministic Scoring → Ranking
+                                                                          ↓
+                                                       Comparison & Suggestions
 ```
 
 - **PDF parsing**: pdfplumber with PyMuPDF fallback
 - **JD extraction**: LLM produces a structured JSON summary + a custom evaluation rubric tailored to the specific JD
+- **Rubric self-audit**: a second LLM pass reviews the generated rubric and removes / down-weights items that fail any of four checks (`NICE_TO_HAVE_AS_HARD`, `JOB_DUTY_AS_REQUIREMENT`, `UNREASONABLE_THRESHOLD`, `NOT_IN_JD`)
 - **Per-resume matching**: For each rubric criterion, the LLM returns `yes / partial / no` with cited evidence
 - **Scoring**: Deterministic in Python (verdicts → weighted scores per dimension), so identical inputs always produce identical scores
-- **LLM inference** runs on **Groq-served Llama 3.3 70B**. Each `analyze()` call issues 4 LLM calls (JD parse, rubric self-audit, JD summary, per-resume rubric eval) and finishes end-to-end in 6–16 seconds.
+- **LLM inference** runs on **Groq-served Llama 3.3 70B**. Each `analyze()` call issues at minimum 4 LLM calls (JD parse, rubric self-audit, JD summary, per-resume rubric eval); plus 1 additional call per extra resume and 1 final cross-resume comparison call when ≥2 resumes are analyzed. End-to-end latency is 6–16 seconds.
 
-Full design discussion in the [report](./ResumeMatch_Report.md).
+Full design discussion in the [report](./ResumeMatch_Report.pdf).
 
 ---
 
@@ -141,19 +142,22 @@ Open the frontend, upload a resume PDF, paste a JD, click Analyze.
 ```
 ResumeMatch/
 ├── backend/
-│   └── app/
-│       ├── main.py            # FastAPI entry point + CORS
-│       ├── matcher.py         # Core matching logic, prompts, scoring
-│       ├── llm_client.py      # Ollama wrapper
-│       ├── pdf_parser.py      # PDF text extraction
-│       └── schemas.py         # Pydantic response models
+│   ├── app/
+│   │   ├── main.py            # FastAPI entry point + CORS
+│   │   ├── matcher.py         # Core matching logic, prompts, scoring, rubric audit
+│   │   ├── llm_client.py      # Groq client wrapper
+│   │   ├── pdf_parser.py      # PDF text extraction (pdfplumber + PyMuPDF fallback)
+│   │   └── schemas.py         # Pydantic request / response models
+│   ├── requirements.txt       # Production dependencies (deployed to Render)
+│   └── requirements-dev.txt   # Notebook / experiments dependencies (not deployed)
 ├── frontend/
 │   ├── app/                   # Next.js App Router
 │   ├── components/
 │   │   └── resume-match/      # Domain components (uploader, result card, JD summary)
 │   ├── lib/                   # API client + utilities
 │   └── public/samples/        # Sample resumes, sample JD, cached sample response
-├── ResumeMatch_Report.md      # Full project report
+├── render.yaml                # Render Blueprint for backend deployment
+├── ResumeMatch_Report.pdf     # Full project report
 └── README.md                  # This file
 ```
 
@@ -180,7 +184,7 @@ ResumeMatch/
 - Rubric quality is sensitive to JD phrasing — JDs that bury technical signals in non-`Responsibilities` prose can produce shallower rubrics.
 - English-only.
 
-See the [report](./ResumeMatch_Report.md) for the full discussion + future work.
+See the [report](./ResumeMatch_Report.pdf) for the full discussion + future work.
 
 ---
 
